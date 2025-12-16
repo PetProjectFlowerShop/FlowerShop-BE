@@ -1,1 +1,74 @@
-.idea
+####################################
+# Java
+####################################
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+####################################
+# Maven
+####################################
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+
+####################################
+# IntelliJ IDEA
+####################################
+*.iml
+*.iws
+*.ipr
+.idea/*
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+
+####################################
+# Spring / Runtime
+####################################
+**/logs/
+**/log/
+**/tmp/
+**/*.pid
+
+####################################
+# Environment / Secrets
+####################################
+**/.env
+**/.env.*
+**/application-local.yml
+**/application-local.yaml
+**/application-dev.yml
+**/application-dev.yaml
+**/application-test.yml
+**/application-test.yaml
+
+####################################
+# OS
+####################################
+.DS_Store
+Thumbs.db
+desktop.ini
+
+####################################
+# Docker
+####################################
+**/docker-compose.override.yml
+**/.docker/
+
+####################################
+# Test / Coverage
+####################################
+**/coverage/
+**/.nyc_output/
+**/jacoco/
+**/*.exec
+
+####################################
+# Misc
+####################################
+*.swp
+*.swo
+*.bak
+*.tmp
