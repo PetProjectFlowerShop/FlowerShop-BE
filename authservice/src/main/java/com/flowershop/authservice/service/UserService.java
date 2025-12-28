@@ -7,7 +7,7 @@ import com.flowershop.authservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.flowershop.authservice.dto.RegisterRequest;
-import com.flowershop.authservice.dto.RegisterResponse;
+import com.flowershop.authservice.dto.AuthResponse;
 import com.flowershop.authservice.entity.User;
 import com.flowershop.authservice.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +21,7 @@ public class UserService {
     private final JwtUtils jwtUtils;
 
     @Transactional
-    public RegisterResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException(
@@ -42,6 +42,6 @@ public class UserService {
 
         userRepository.save(user);
 
-        return new RegisterResponse(jwtUtils.generateToken(user.getEmail()));
+        return new AuthResponse(jwtUtils.generateToken(user.getEmail()));
     }
 }

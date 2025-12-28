@@ -1,7 +1,7 @@
 package com.flowershop.authservice.controller;
 
 import com.flowershop.authservice.dto.RegisterRequest;
-import com.flowershop.authservice.dto.RegisterResponse;
+import com.flowershop.authservice.dto.AuthResponse;
 import com.flowershop.authservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return userService.register(request);
     }
 }
