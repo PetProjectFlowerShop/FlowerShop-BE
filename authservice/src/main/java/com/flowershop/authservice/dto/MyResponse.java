@@ -17,4 +17,8 @@ public class MyResponse<T> implements Serializable {
     public static <T extends Object> MyResponse<T> createSuccess(T body) {
         return new MyResponse<>("success", body, true);
     }
+    public static MyResponse<Void> creteError(String message){
+        return new MyResponse<>(message,null,false);
+
+    }
 }
