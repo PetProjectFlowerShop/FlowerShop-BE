@@ -1,7 +1,7 @@
-package com.flowershop.authservice.model.entity;
+package com.flowershop.authservice.entity;
 
-import com.flowershop.authservice.model.emums.AuthProvider;
-import com.flowershop.authservice.model.emums.Role;
+import com.flowershop.authservice.entity.emums.AuthProvider;
+import com.flowershop.authservice.entity.emums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

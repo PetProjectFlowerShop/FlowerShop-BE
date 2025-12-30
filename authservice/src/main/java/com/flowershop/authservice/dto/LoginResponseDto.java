@@ -1,4 +1,4 @@
-package com.flowershop.authservice.model.dto.user.response;
+package com.flowershop.authservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,6 +1,6 @@
 package com.flowershop.authservice.repository;
 
-import com.flowershop.authservice.model.entity.User;
+import com.flowershop.authservice.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

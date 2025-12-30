@@ -1,4 +1,4 @@
-package com.flowershop.authservice.model.dto.user.request;
+package com.flowershop.authservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-public class LoginUserRequestDto implements Serializable {
+public class LoginRequest implements Serializable {
     @NotBlank(message = "Email must be present")
     private String email;
     @NotBlank(message = "Password must be present")
