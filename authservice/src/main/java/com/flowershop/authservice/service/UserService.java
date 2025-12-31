@@ -28,20 +28,21 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        User user = optionalUser.orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_EMAIL.getMessage(email)));
+        User user = optionalUser.orElseThrow(() ->
+            new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_EMAIL.getMessage(email)));
         return new UsersDetails(user);
     }
 
 
-
     public LoginResponseDto login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_EMAIL.getMessage(request.getEmail())));
-        if (!user.getPassword().equals(passwordEncoder.encode(request.getPassword()))) {
+            .orElseThrow(() ->
+                new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_EMAIL.getMessage(request.getEmail())));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException(ApiErrorMessage.INVALID_PASSWORD.getMessage(request.getEmail()));
         }
-        String jwtToken= jwtUtils.generateToken(request.getEmail());
-        return new LoginResponseDto(jwtToken,user.getRole().name());
+        String jwtToken = jwtUtils.generateToken(request.getEmail());
+        return new LoginResponseDto(jwtToken, user.getRole().name());
 
     }
 }
