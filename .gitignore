@@ -23,6 +23,8 @@ hs_err_pid*
 .idea/*
 !.idea/codeStyles/
 !.idea/inspectionProfiles/
+.idea/
+
 
 ####################################
 # Spring / Runtime
