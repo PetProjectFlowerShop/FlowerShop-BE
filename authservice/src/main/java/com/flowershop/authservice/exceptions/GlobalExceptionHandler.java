@@ -48,8 +48,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenNoValidException.class)
     public ResponseEntity<Map<String, Object>> handleTokenNoValidException(TokenNoValidException ex) {
-        Map<String, Object> response = prepareErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        Map<String, Object> response = prepareErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(EmailNotRegisteredException.class)

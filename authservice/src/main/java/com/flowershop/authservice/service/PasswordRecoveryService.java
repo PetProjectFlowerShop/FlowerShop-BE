@@ -22,11 +22,11 @@ public class PasswordRecoveryService {
     private final StringRedisTemplate redisTemplate;
 
     public void requestPasswordRecovery(String email){
-        if(!ifEmailExists(email)){
+        if(!userRepository.existsByEmail(email)){
             throw new EmailNotRegisteredException(email);
         }
 
-        String token = generateUUID();
+        String token = UUID.randomUUID().toString();
         System.out.println("Token = " + token);
         redisTemplate.opsForValue().set(token, email, Duration.ofMinutes(15));
     }
@@ -46,14 +46,4 @@ public class PasswordRecoveryService {
         user.setPassword(bCryptPasswordEncoder.encode(newPassword));
         userRepository.save(user);
     }
-
-    private boolean ifEmailExists(String email){
-        return userRepository.existsByEmail(email);
-    }
-
-    private String generateUUID(){
-        return UUID.randomUUID().toString();
-    }
-
-
 }
