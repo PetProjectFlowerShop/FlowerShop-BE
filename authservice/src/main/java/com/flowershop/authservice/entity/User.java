@@ -3,14 +3,13 @@ package com.flowershop.authservice.entity;
 import com.flowershop.authservice.entity.emums.AuthProvider;
 import com.flowershop.authservice.entity.emums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

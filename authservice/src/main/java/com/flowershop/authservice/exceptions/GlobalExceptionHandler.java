@@ -45,4 +45,25 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(response);
     }
+
+    @ExceptionHandler(TokenNoValidException.class)
+    public ResponseEntity<Map<String, Object>> handleTokenNoValidException(TokenNoValidException ex) {
+        Map<String, Object> response = prepareErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(EmailNotRegisteredException.class)
+    public ResponseEntity<Map<String, Object>> handleEmailNotRegisteredException(EmailNotRegisteredException ex){
+        Map<String, Object> response = prepareErrorResponse(HttpStatus.NOT_FOUND, "Not Found",ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    private Map<String, Object> prepareErrorResponse(HttpStatus status, String error, String message){
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+        response.put("error", error);
+        response.put("message", message);
+        return response;
+    }
 }
