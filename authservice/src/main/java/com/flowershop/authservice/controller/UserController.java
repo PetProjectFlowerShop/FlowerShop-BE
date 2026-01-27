@@ -5,6 +5,11 @@ import com.flowershop.authservice.dto.LoginResponseDto;
 import com.flowershop.authservice.dto.MyResponse;
 import com.flowershop.authservice.exceptions.BadCredentialsException;
 import com.flowershop.authservice.service.RateLimitingService;
+import com.flowershop.authservice.dto.PasswordRecoveryRequest;
+import com.flowershop.authservice.dto.PasswordResetDto;
+import com.flowershop.authservice.dto.RegisterRequest;
+import com.flowershop.authservice.dto.AuthResponse;
+import com.flowershop.authservice.service.PasswordRecoveryService;
 import com.flowershop.authservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,6 +43,19 @@ public class UserController {
             rateLimitingService.recordFailedAttempts(request.getEmail());
             throw e;
         }
+    private final PasswordRecoveryService passwordRecoveryService;
 
+    }
+
+    @PostMapping("/password-recovery/request")
+    @ResponseStatus(HttpStatus.OK)
+    public void requestPasswordRecovery(@Valid @RequestBody PasswordRecoveryRequest request){
+        passwordRecoveryService.requestPasswordRecovery(request.email());
+    }
+
+    @PostMapping("/password-recovery/confirm")
+    @ResponseStatus(HttpStatus.OK)
+    public void confirmPasswordRecovery(@Valid @RequestBody PasswordResetDto passwordResetDto){
+        passwordRecoveryService.confirmPassword(passwordResetDto);
     }
 }
