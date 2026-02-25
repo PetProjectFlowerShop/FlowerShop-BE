@@ -12,6 +12,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 import java.time.LocalDateTime;
+
 @Data
 @Builder
 @Getter
@@ -21,10 +22,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "firstname", nullable = false,  length = 100)
+    @Column(name = "firstname", nullable = false, length = 100)
     private String firstname;
 
     @Column(name = "lastname", length = 100)
@@ -33,12 +35,15 @@ public class User {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 128)
+    @Column(name = "password", length = 128)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "auth_provider", nullable = false, length = 20)
     private AuthProvider authProvider;
+
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
