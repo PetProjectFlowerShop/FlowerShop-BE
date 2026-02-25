@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GoogleAuthService {
     @Value("${google.clientId}")
-    private final String clientId;
+    private String clientId;
 
     public GoogleLoginOrRegisterDTO loginWithGoogle(String credential) {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
