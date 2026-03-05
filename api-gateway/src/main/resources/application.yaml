@@ -12,3 +12,14 @@ eureka:
       defaultZone: ${EUREKA_DEFAULT_ZONE}
     register-with-eureka: true
     fetch-registry: true
+
+server:
+  port: ${API_GATEWAY_PORT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  

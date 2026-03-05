@@ -6,3 +6,10 @@ eureka:
     fetch-registry: false
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  

@@ -36,10 +36,53 @@ services:
       timeout: 5s
       retries: 5
 
-  authservice:
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    restart: unless-stopped
+    ports:
+      - "${EUREKA_APP_PORT:-8761}:8761"
+    networks:
+      - microservices-network
+    environment:
+      EUREKA_APP_PORT: ${EUREKA_APP_PORT}
+      EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    networks:
+      - microservices-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      API_GATEWAY_PORT: ${API_GATEWAY_PORT}
+      EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${API_GATEWAY_PORT}/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
     build:
       context: ./authservice
       dockerfile: Dockerfile
+    container_name: auth-service
     networks:
       - microservices-network
     depends_on:
@@ -47,17 +90,25 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     restart: unless-stopped
     environment:
      POSTGRES_URL: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
      POSTGRES_USER: ${POSTGRES_USER}
      POSTGRES_PASS: ${POSTGRES_PASSWORD}
-     SERVER_PORT: ${SERVER_PORT}
+     AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
      REDIS_HOST: ${REDIS_HOST}
      REDIS_PORT: ${REDIS_PORT}
+     EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
      JWT_SECRET: ${JWT_SECRET}
      EXPIRATION_TIME: ${EXPIRATION_TIME}
      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${AUTH_SERVICE_PORT}/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

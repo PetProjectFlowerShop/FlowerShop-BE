@@ -15,13 +15,14 @@ public class GatewayConfig {
     @Bean
     RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-            .route("auth-service", r -> r.path("/auth/**")
-                .uri("lb://auth-service"))
-            .route("catalog-service", r -> r.path("/flowers/**")
-                .filters(f -> f.filter(accessFilter))
-                .uri("lb://catalog-service"))
-            .route("order-service", r -> r.path("orders/**")
-                .filters(f -> f.filter(accessFilter))
-                .uri("lb://order-service")).build();
+                .route("authservice", r -> r.path("/auth/**")
+                        .uri("lb://AUTHSERVICE"))
+                .route("catalogservice", r -> r.path("/flowers/**")
+                        .filters(f -> f.filter(accessFilter))
+                        .uri("lb://CATALOGSERVICE"))
+                .route("orderservice", r -> r.path("orders/**")
+                        .filters(f -> f.filter(accessFilter))
+                        .uri("lb://ORDERSERVICE"))
+                .build();
     }
 }
