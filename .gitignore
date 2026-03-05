@@ -38,7 +38,6 @@ hs_err_pid*
 # Environment / Secrets
 ####################################
 **/.env
-**/.env.*
 **/application-local.yml
 **/application-local.yaml
 **/application-dev.yml
