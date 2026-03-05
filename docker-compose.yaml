@@ -78,11 +78,11 @@ services:
       timeout: 5s
       retries: 5
 
-  authservice:
+  auth-service:
     build:
       context: ./authservice
       dockerfile: Dockerfile
-    container_name: authservice
+    container_name: auth-service
     networks:
       - microservices-network
     depends_on:
