@@ -25,6 +25,10 @@ hs_err_pid*
 !.idea/inspectionProfiles/
 .idea/
 
+####################################
+# VS Code
+####################################
+.vscode/
 
 ####################################
 # Spring / Runtime
@@ -38,7 +42,6 @@ hs_err_pid*
 # Environment / Secrets
 ####################################
 **/.env
-**/.env.*
 **/application-local.yml
 **/application-local.yaml
 **/application-dev.yml
