@@ -27,15 +27,6 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-time: ${EXPIRATION_TIME}
-  password:
-    recovery:
-      host: ${SERVICE_HOST}
-      path: ${PASSWORD_RECOVERY_PATH}
 
 server:
   port: ${SERVER_PORT}
-
-#app:
-#  jwt:
-#    secret: ${JWT_SECRET}
-#    expiration-time: ${EXPIRATION_TIME}

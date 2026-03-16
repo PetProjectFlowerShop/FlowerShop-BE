@@ -5,9 +5,9 @@ import com.flowershop.authservice.entity.User;
 import com.flowershop.authservice.exceptions.EmailNotRegisteredException;
 import com.flowershop.authservice.exceptions.TokenNoValidException;
 import com.flowershop.authservice.repository.UserRepository;
+import com.flowershop.authservice.utils.TokenEncryption;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,10 +21,8 @@ public class PasswordRecoveryService {
     private final UserRepository userRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final StringRedisTemplate redisTemplate;
-    @Value("${app.password.recovery.host}")
-    private String host;
-    @Value("${app.password.recovery.path}")
-    private String recoveryPath;
+    private final TokenEncryption tokenEncryption;
+
 
     public void requestPasswordRecovery(String email){
         if(!userRepository.existsByEmail(email)){
@@ -32,15 +30,16 @@ public class PasswordRecoveryService {
         }
 
         String token = UUID.randomUUID().toString();
-        String url = host + recoveryPath + token;
-        System.out.println("url = " + url);
-        redisTemplate.opsForValue().set(token, email, Duration.ofMinutes(15));
+        System.out.println(token);
+        String hashToken = tokenEncryption.hashToken(token);
+        redisTemplate.opsForValue().set(hashToken, email, Duration.ofMinutes(15));
     }
 
     @Transactional
     public void confirmPassword(String token, PasswordResetDto passwordResetDto){
         String newPassword = passwordResetDto.newPassword();
-        String email = redisTemplate.opsForValue().getAndDelete(token);
+        String hashToken = tokenEncryption.hashToken(token);
+        String email = redisTemplate.opsForValue().getAndDelete(hashToken);
         if (email == null){
             throw new TokenNoValidException();
         }
