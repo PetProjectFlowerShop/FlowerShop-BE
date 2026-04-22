@@ -45,10 +45,6 @@ jobs:
           fi
 
           BUILD_ALL=false
-          if [[ "${{ github.event.action }}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then
-            BUILD_ALL=true
-          fi
-
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           if [[ -z "${BASE_SHA}" || -z "${HEAD_SHA}" || "${BASE_SHA}" =~ ^0{40}$ || "${HEAD_SHA}" =~ ^0{40}$ ]]; then
@@ -61,7 +57,7 @@ jobs:
           fi
 
           if [[ "${BUILD_ALL}" == "false" ]]; then
-            if echo "${CHANGED_FILES}" | grep -qE '(^[^/]+$|^\.github/|^docker-compose\.ya?ml$)'; then
+            if echo "${CHANGED_FILES}" | grep -qE '(^[^/.][^/]*$|^docker-compose\.ya?ml$)'; then
               BUILD_ALL=true
             fi
           fi
