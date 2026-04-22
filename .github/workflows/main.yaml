@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  pull_request:
+    branches: 
+      - '*'
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Compute service matrix
+        id: set-matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # List all candidate services = top-level dirs that contain pom.xml + Dockerfile
+          mapfile -t ALL_SERVICES < <(
+            for d in */ ; do
+              d="${d%/}"
+              [[ -f "$d/pom.xml" && -f "$d/Dockerfile" ]] && echo "$d" || true
+            done
+          )
+
+          if [[ ${#ALL_SERVICES[@]} -eq 0 ]]; then
+            echo "services=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Determine diff base/head for PR vs push
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          BUILD_ALL=false
+          if [[ -z "${BASE_SHA}" || "${BASE_SHA}" =~ ^0{40}$ ]]; then
+            BUILD_ALL=true
+          fi
+
+          CHANGED_FILES=""
+          if [[ "${BUILD_ALL}" == "false" ]]; then
+            CHANGED_FILES="$(git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" || true)"
+          fi
+
+          # If global files changed (repo root files, workflow files, compose, etc.) => build all services
+          if [[ "${BUILD_ALL}" == "false" ]]; then
+            if echo "${CHANGED_FILES}" | grep -qE '(^[^/]+$|^\.github/|^docker-compose\.ya?ml$)'; then
+              BUILD_ALL=true
+            fi
+          fi
+
+          if [[ "${BUILD_ALL}" == "true" ]]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            # Changed top-level directories
+            mapfile -t CHANGED_DIRS < <(echo "${CHANGED_FILES}" | awk -F/ 'NF>1 {print $1}' | sort -u)
+
+            SERVICES=()
+            for s in "${ALL_SERVICES[@]}"; do
+              for c in "${CHANGED_DIRS[@]}"; do
+                if [[ "${s}" == "${c}" ]]; then
+                  SERVICES+=("${s}")
+                fi
+              done
+            done
+          fi
+
+          if [[ ${#SERVICES[@]} -eq 0 ]]; then
+            echo "services=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Convert to JSON array for matrix
+          SERVICES_JSON="$(printf '%s\n' "${SERVICES[@]}" | jq -R -s -c 'split("\n")[:-1]')"
+          echo "services=${SERVICES_JSON}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build
+        working-directory: ${{ matrix.service }}
+        run: ./mvnw -B -ntp verify
+
+      - name: Compute image tag parts
+        id: meta
+        shell: bash
+        working-directory: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+
+          VERSION="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version | tail -n 1 | tr -d '\r')"
+          ARTIFACT_ID="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.artifactId | tail -n 1 | tr -d '\r')"
+          SHORT_SHA="${GITHUB_SHA::7}"
+
+          IMAGE_TAG="${ARTIFACT_ID}-${VERSION}-${SHORT_SHA}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "artifact_id=${ARTIFACT_ID}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/${{ steps.meta.outputs.artifact_id }}:${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Job summary
+        run: |
+          echo "### ${{ matrix.service }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifactId: \`${{ steps.meta.outputs.artifact_id }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- version: \`${{ steps.meta.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- tag: \`${{ steps.meta.outputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- image: \`ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/${{ steps.meta.outputs.artifact_id }}:${{ steps.meta.outputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
