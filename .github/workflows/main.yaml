@@ -104,13 +104,26 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       POSTGRES_URL: jdbc:postgresql://localhost:5432/${{ secrets.CI_POSTGRES_DB }}
       POSTGRES_USER: ${{ secrets.CI_POSTGRES_USER }}
       POSTGRES_PASS: ${{ secrets.CI_POSTGRES_PASSWORD }}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      EUREKA_DEFAULT_ZONE: ${{ secrets.CI_EUREKA_DEFAULT_ZONE }}
+      GOOGLE_CLIENT_ID: ${{ secrets.CI_GOOGLE_CLIENT_ID }}
       JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
       EXPIRATION_TIME: ${{ secrets.CI_JWT_EXPIRATION_TIME }}
-      SERVER_PORT: ${{ secrets.CI_SERVER_PORT }}
+      AUTH_SERVICE_PORT: ${{ secrets.CI_AUTH_SERVICE_PORT }}
     strategy:
       fail-fast: false
       matrix:
