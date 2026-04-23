@@ -2,42 +2,118 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: postgres-db
+    container_name: postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - microservices-network
     environment:
-      POSTGRES_USER: postgres_user
-      POSTGRES_PASSWORD: postgres_pass
-      POSTGRES_DB: user_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d user_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - microservices-network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  authservice:
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    restart: unless-stopped
+    ports:
+      - "${EUREKA_APP_PORT:-8761}:8761"
+    networks:
+      - microservices-network
+    environment:
+      EUREKA_APP_PORT: ${EUREKA_APP_PORT}
+      EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    networks:
+      - microservices-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      API_GATEWAY_PORT: ${API_GATEWAY_PORT}
+      EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${API_GATEWAY_PORT}/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
     build:
       context: ./authservice
       dockerfile: Dockerfile
+    container_name: auth-service
     networks:
       - microservices-network
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     restart: unless-stopped
     environment:
-     POSTGRES_URL: jdbc:postgresql://postgres:5432/user_db
-     POSTGRES_USER: postgres_user
-     POSTGRES_PASS: postgres_pass
-     SERVER_PORT: 8081
+     POSTGRES_URL: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+     POSTGRES_USER: ${POSTGRES_USER}
+     POSTGRES_PASS: ${POSTGRES_PASSWORD}
+     AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
+     REDIS_HOST: ${REDIS_HOST}
+     REDIS_PORT: ${REDIS_PORT}
+     EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+     JWT_SECRET: ${JWT_SECRET}
+     EXPIRATION_TIME: ${EXPIRATION_TIME}
+     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${AUTH_SERVICE_PORT}/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

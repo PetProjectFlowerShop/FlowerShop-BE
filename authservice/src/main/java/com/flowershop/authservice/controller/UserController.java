@@ -9,6 +9,7 @@ import com.flowershop.authservice.dto.PasswordRecoveryRequest;
 import com.flowershop.authservice.dto.PasswordResetDto;
 import com.flowershop.authservice.dto.RegisterRequest;
 import com.flowershop.authservice.dto.AuthResponse;
+import com.flowershop.authservice.dto.GoogleLoginRequest;
 import com.flowershop.authservice.service.PasswordRecoveryService;
 import com.flowershop.authservice.service.UserService;
 import jakarta.validation.Valid;
@@ -36,7 +37,7 @@ public class UserController {
         if (rateLimitingService.isBlocked(request.getEmail())) {
             MyResponse<Void> myResponse = MyResponse.creteError("Too many attempts");
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(myResponse);
+                    .body(myResponse);
         }
         try {
             LoginResponseDto loginResponseDto = userService.login(request);
@@ -49,9 +50,14 @@ public class UserController {
         }
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(userService.loginOrRegisterWithGoogle(request.credential()));
+    }
+
     @PostMapping("/password-recovery/request")
     @ResponseStatus(HttpStatus.OK)
-    public void requestPasswordRecovery(@Valid @RequestBody PasswordRecoveryRequest request){
+    public void requestPasswordRecovery(@Valid @RequestBody PasswordRecoveryRequest request) {
         passwordRecoveryService.requestPasswordRecovery(request.email());
     }
 
