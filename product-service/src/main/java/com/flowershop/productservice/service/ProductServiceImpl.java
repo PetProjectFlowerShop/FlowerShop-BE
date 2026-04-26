@@ -4,6 +4,7 @@ import com.flowershop.productservice.dto.ProductCreateRequest;
 import com.flowershop.productservice.dto.ProductResponse;
 import com.flowershop.productservice.dto.ProductUpdateRequest;
 import com.flowershop.productservice.repository.ProductRepository;
+import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final ProductImageService productImageService;
 
     @Override
     public ProductResponse createProduct(ProductCreateRequest request) {
