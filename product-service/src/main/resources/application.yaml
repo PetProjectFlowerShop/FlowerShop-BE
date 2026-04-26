@@ -15,9 +15,9 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
-  aws:
-    s3:
-      bucket-name: flower-shop-floria
-      region: eu-central-1
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
+aws:
+  s3:
+    bucket-name: flower-shop-floria
+    region: eu-central-1
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
