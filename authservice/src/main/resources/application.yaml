@@ -1,4 +1,7 @@
 spring:
+#  profiles:
+#    active: local
+
   application:
     name: authservice
 
@@ -36,6 +39,7 @@ app:
     expiration-time: ${EXPIRATION_TIME}
 
 server:
+
   port: ${AUTH_SERVICE_PORT}
 
 management:
