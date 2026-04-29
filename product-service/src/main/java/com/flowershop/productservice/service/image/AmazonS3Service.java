@@ -34,6 +34,12 @@ public class AmazonS3Service implements FileStorageService {
 
     @Override
     public void deleteFile(String fileUrl) {
+        s3Client.deleteObject(builder -> builder
+               .bucket(bucket)
+                .key(fileUrl)
+                .build()
+        );
+
 
     }
 }
