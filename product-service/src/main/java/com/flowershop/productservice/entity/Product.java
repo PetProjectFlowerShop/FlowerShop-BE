@@ -49,7 +49,7 @@ public class Product {
     private Integer quantity;
 
     @Column(name = "stems_count", nullable = false)
-    private Integer stems_count;
+    private Integer stemsCount;
 
     @Column(name = "is_available")
     private Boolean isAvailable = true;

@@ -9,6 +9,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "Spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
     imports = Object.class)
+
 public interface ProductImageMapper {
     @Mapping(target = "productId",source = "product.id")
     ProductImageResponse convert(ProductImage productImage);
