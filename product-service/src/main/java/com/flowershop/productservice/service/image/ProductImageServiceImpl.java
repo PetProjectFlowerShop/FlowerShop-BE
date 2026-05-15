@@ -38,6 +38,7 @@ public class ProductImageServiceImpl implements ProductImageService {
             productImage.setImageUrl(url);
             productImage = productImageRepository.save(productImage);
             ProductImageResponse response = productImageMapper.convert(productImage);
+            response.setProductId(productImage.getProduct().getId());
             productImageResponses.add(response);
         }
         return productImageResponses;
@@ -70,7 +71,12 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     public List<ProductImageResponse> getProductImages(Long productId) {
-        return productImageRepository.findAllByProductId(productId).stream().map(productImageMapper::convert).toList();
+        return productImageRepository.findAllByProductId(productId).stream().map(productImage -> {
+            ProductImageResponse response=productImageMapper.convert(productImage);
+            response.setProductId(productImage.getProduct().getId());
+            return response;
+
+        }).toList();
 
     }
 }

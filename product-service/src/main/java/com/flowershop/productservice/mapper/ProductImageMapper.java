@@ -11,7 +11,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
     imports = Object.class)
 
 public interface ProductImageMapper {
-    @Mapping(target = "productId",source = "product.id")
+   // @Mapping(target = "productId",source = "product.id")
     ProductImageResponse convert(ProductImage productImage);
 
 }

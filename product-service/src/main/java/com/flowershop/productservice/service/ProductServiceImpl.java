@@ -38,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
             new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(request.getFlowerTypeId())));
         BouquetType bouquetType = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(request.getBouquetTypeId())));
-        Product product = productMapper.create(request, color, flowerType, bouquetType);
+        Product product = productMapper.create(request,color,flowerType,bouquetType);
         product = productRepository.save(product);
         ProductResponse response = productMapper.convertProductToProductResponse(product);
         return response;
