@@ -30,6 +30,7 @@ public class ProductMapperImpl implements ProductMapper {
     @Override
     public ProductResponse convertProductToProductResponse(Product product) {
         ProductResponse response =new ProductResponse();
+        response.setId(product.getId());
         response.setName(product.getName());
         response.setDescription(product.getDescription());
         response.setPrice(product.getPrice());
@@ -45,6 +46,7 @@ public class ProductMapperImpl implements ProductMapper {
         response.setFlowerType(product.getFlowerType());
         response.setColor(product.getColor());
         response.setBouquetType(product.getBouquetType());
+        response.setCreatedAt(product.getCreatedAt());
 
 
         return response;

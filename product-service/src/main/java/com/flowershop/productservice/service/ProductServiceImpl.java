@@ -71,17 +71,17 @@ public class ProductServiceImpl implements ProductService {
         product.setIsSeasonOffer(request.getIsSeasonOffer());
         product.setIsRecommended(request.getIsRecommended());
         if (!Objects.equals(product.getFlowerType().getId(), request.getFlowerTypeId())) {
-            FlowerType flowerType = flowerTypeRepository.findById(id).orElseThrow(() ->
+            FlowerType flowerType = flowerTypeRepository.findById(request.getFlowerTypeId()).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(id)));
             product.setFlowerType(flowerType);
         }
         if (!Objects.equals(product.getColor().getId(), request.getColorId())) {
-            Color color = colorRepository.findById(id).orElseThrow(() ->
+            Color color = colorRepository.findById(request.getColorId()).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.COLOR_NOT_FOUND_BY_ID.getMessage(id)));
             product.setColor(color);
         }
         if (!Objects.equals(product.getBouquetType().getId(), request.getBouquetTypeId())) {
-            BouquetType type = bouquetTypeRepository.findById(id).orElseThrow(() ->
+            BouquetType type = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(id)));
             product.setBouquetType(type);
         }
