@@ -18,7 +18,7 @@ public interface ProductImageService {
      * @param files     the list of multipart files to be uploaded.
      * @return a list of {@link ProductImageResponse} containing image metadata and URLs.
      */
-    List<ProductImageResponse> addImages(Long productId, List<MultipartFile> files) throws IOException;
+    List<ProductImageResponse> addImages(Long productId, MultipartFile[] files) throws IOException;
 
     /**
      * Deletes a specific image from both the database and cloud storage.

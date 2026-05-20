@@ -20,8 +20,8 @@ public class AmazonS3Service implements FileStorageService {
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-        String[] parts = file.getOriginalFilename().split(".");
-        String key = String.valueOf(UUID.randomUUID()) + "." + parts[parts.length - 1];
+        String[] parts = file.getOriginalFilename().split("\\.");
+        String key = (UUID.randomUUID()) + "." + parts[parts.length - 1];
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucket)
             .key(key)

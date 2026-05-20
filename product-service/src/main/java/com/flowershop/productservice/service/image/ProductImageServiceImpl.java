@@ -27,7 +27,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageMapper productImageMapper;
 
     @Override
-    public List<ProductImageResponse> addImages(Long productId, List<MultipartFile> files) throws IOException {
+    public List<ProductImageResponse> addImages(Long productId, MultipartFile[] files) throws IOException {
         List<ProductImageResponse> productImageResponses = new ArrayList<>();
         Product product = productRepository.findById(productId).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(productId)));
