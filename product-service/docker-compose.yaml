@@ -1,0 +1,20 @@
+services:
+  postgres-product:
+    image: postgres:17-alpine
+    container_name: postgres-product
+    restart: unless-stopped
+    ports:
+      - "${PRODUCT_DB_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${PRODUCT_DB_USER:-product_user}
+      POSTGRES_PASSWORD: ${PRODUCT_DB_PASSWORD:-product_pass}
+      POSTGRES_DB: ${PRODUCT_DB_NAME:-product_db}
+    volumes:
+      - postgres_product_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_product_data:

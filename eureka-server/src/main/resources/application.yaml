@@ -1,0 +1,15 @@
+server:
+  port: ${EUREKA_APP_PORT}
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  

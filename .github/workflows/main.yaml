@@ -1,0 +1,344 @@
+name: CI
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Compute service matrix
+        id: set-matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t ALL_SERVICES < <(
+            for d in */ ; do
+              d="${d%/}"
+              [[ -f "$d/pom.xml" && -f "$d/Dockerfile" ]] && echo "$d" || true
+            done
+          )
+
+          if [[ ${#ALL_SERVICES[@]} -eq 0 ]]; then
+            echo "services=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BUILD_ALL=false
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          if [[ -z "${BASE_SHA}" || -z "${HEAD_SHA}" || "${BASE_SHA}" =~ ^0{40}$ || "${HEAD_SHA}" =~ ^0{40}$ ]]; then
+            BUILD_ALL=true
+          fi
+
+          CHANGED_FILES=""
+          if [[ "${BUILD_ALL}" == "false" ]]; then
+            CHANGED_FILES="$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" || git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" || true)"
+          fi
+
+          if [[ "${BUILD_ALL}" == "false" ]]; then
+            if echo "${CHANGED_FILES}" | grep -qE '(^[^/.][^/]*$|^docker-compose\.ya?ml$)'; then
+              BUILD_ALL=true
+            fi
+          fi
+
+          if [[ "${BUILD_ALL}" == "true" ]]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            mapfile -t CHANGED_DIRS < <(echo "${CHANGED_FILES}" | awk -F/ 'NF>1 {print $1}' | sort -u)
+
+            SERVICES=()
+            for s in "${ALL_SERVICES[@]}"; do
+              for c in "${CHANGED_DIRS[@]}"; do
+                if [[ "${s}" == "${c}" ]]; then
+                  SERVICES+=("${s}")
+                fi
+              done
+            done
+          fi
+
+          if [[ ${#SERVICES[@]} -eq 0 ]]; then
+            echo "services=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SERVICES_JSON="$(printf '%s\n' "${SERVICES[@]}" | jq -R -s -c 'split("\n")[:-1]')"
+          echo "services=${SERVICES_JSON}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+#    services:
+#      postgres:
+#        image: postgres:17-alpine
+#        env:
+#          POSTGRES_USER: ${{ secrets.CI_POSTGRES_USER }}
+#          POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+#          POSTGRES_DB: ${{ secrets.CI_POSTGRES_DB }}
+#        ports:
+#          - 5432:5432
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#      redis:
+#        image: redis:7-alpine
+#        ports:
+#          - 6379:6379
+#        options: >-
+#          --health-cmd "redis-cli ping"
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#    env:
+#      POSTGRES_URL: jdbc:postgresql://localhost:5432/${{ secrets.CI_POSTGRES_DB }}
+#      POSTGRES_USER: ${{ secrets.CI_POSTGRES_USER }}
+#      POSTGRES_PASS: ${{ secrets.CI_POSTGRES_PASSWORD }}
+#      REDIS_HOST: localhost
+#      REDIS_PORT: 6379
+#      EUREKA_DEFAULT_ZONE: ${{ secrets.CI_EUREKA_DEFAULT_ZONE }}
+#      GOOGLE_CLIENT_ID: ${{ secrets.CI_GOOGLE_CLIENT_ID }}
+#      JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
+#      EXPIRATION_TIME: ${{ secrets.CI_JWT_EXPIRATION_TIME }}
+#      AUTH_SERVICE_PORT: ${{ secrets.CI_AUTH_SERVICE_PORT }}
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Test and build Java application
+        working-directory: ${{ matrix.service }}
+        run: ./mvnw -B -ntp -DskipTests package
+
+  build-image:
+    name: Build Docker Image and Upload
+    runs-on: ubuntu-latest
+    needs:
+      - detect-changes
+      - build
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Image metadata
+        id: meta
+        shell: bash
+        working-directory: ${{ matrix.service }}
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          VERSION="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version | tail -n 1 | tr -d '\r')"
+          ARTIFACT_ID="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.artifactId | tail -n 1 | tr -d '\r')"
+          SHORT_SHA="${SOURCE_SHA::7}"
+          IMAGE_TAG="${ARTIFACT_ID}-${VERSION}-${SHORT_SHA}"
+
+          IMAGE_OWNER="$(printf '%s' "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_REPO="$(printf '%s' "${REPOSITORY_NAME}" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_PACKAGE="$(printf '%s' "${ARTIFACT_ID}" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_NAME="ghcr.io/${IMAGE_OWNER}/${IMAGE_REPO}/${IMAGE_PACKAGE}"
+          IMAGE_REF="${IMAGE_NAME}:${IMAGE_TAG}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "artifact_id=${ARTIFACT_ID}" >> "$GITHUB_OUTPUT"
+          echo "source_sha=${SOURCE_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image_ref=${IMAGE_REF}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.image_ref }}
+          outputs: type=docker,dest=/tmp/${{ steps.meta.outputs.artifact_id }}.tar
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Prepare artifact files
+        shell: bash
+        env:
+          SERVICE: ${{ matrix.service }}
+          SOURCE_SHA: ${{ steps.meta.outputs.source_sha }}
+          ARTIFACT_ID: ${{ steps.meta.outputs.artifact_id }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_REF: ${{ steps.meta.outputs.image_ref }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p image-artifact image-metadata
+          mv "/tmp/${ARTIFACT_ID}.tar" "image-artifact/${ARTIFACT_ID}.tar"
+
+          {
+            echo "SERVICE=${SERVICE}"
+            echo "SOURCE_SHA=${SOURCE_SHA}"
+            echo "ARTIFACT_ID=${ARTIFACT_ID}"
+            echo "VERSION=${VERSION}"
+            echo "IMAGE_TAG=${IMAGE_TAG}"
+            echo "IMAGE_REF=${IMAGE_REF}"
+          } > image-metadata/metadata.env
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service }}
+          path: image-artifact/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Docker image metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-metadata-${{ matrix.service }}
+          path: image-metadata/
+          if-no-files-found: error
+          retention-days: 7
+
+  push-image:
+    name: Push Docker Image
+    runs-on: ubuntu-latest
+    needs:
+      - detect-changes
+      - build-image
+    if: github.event_name == 'push' && needs.detect-changes.outputs.services != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
+    steps:
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service }}
+          path: image-artifact
+
+      - name: Download Docker image metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-metadata-${{ matrix.service }}
+          path: image-metadata
+
+      - name: Read image metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          source image-metadata/metadata.env
+
+          echo "artifact_id=${ARTIFACT_ID}" >> "$GITHUB_OUTPUT"
+          echo "image_ref=${IMAGE_REF}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load Docker image
+        run: docker load --input image-artifact/${{ steps.meta.outputs.artifact_id }}.tar
+
+      - name: Push Docker image
+        run: docker push ${{ steps.meta.outputs.image_ref }}
+
+  create-git-tag:
+    name: Create Git Tag
+    runs-on: ubuntu-latest
+    needs:
+      - detect-changes
+      - push-image
+    if: github.event_name == 'push' && needs.detect-changes.outputs.services != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Docker image metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-metadata-${{ matrix.service }}
+          path: image-metadata
+
+      - name: Create and push tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          source image-metadata/metadata.env
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${IMAGE_TAG}" >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${IMAGE_TAG}" HEAD -m "Release ${IMAGE_TAG}"
+          git push origin "refs/tags/${IMAGE_TAG}"
