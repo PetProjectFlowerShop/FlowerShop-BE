@@ -3,10 +3,10 @@ package com.flowershop.productservice.controller;
 import com.flowershop.productservice.dto.ProductFilterRequest;
 import com.flowershop.productservice.dto.ProductFilterResponse;
 import com.flowershop.productservice.service.catalog.CatalogService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,7 +14,7 @@ import java.util.List;
 public class CatalogController {
     private final CatalogService service;
     @GetMapping
-    public List<ProductFilterResponse> getAllNeeded(@RequestBody ProductFilterRequest request) {
+    public Page<ProductFilterResponse> getAllNeeded(@RequestBody @Valid ProductFilterRequest request) {
         return service.getSearchedProducts(request);
     }
 }
