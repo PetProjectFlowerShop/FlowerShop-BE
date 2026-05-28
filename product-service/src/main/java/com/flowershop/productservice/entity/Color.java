@@ -23,6 +23,4 @@ public class Color {
     private Long id;
     @Column(name = "name", nullable = false, length = 50)
     private String name;
-    @Column(name = "hex_code", length = 7)
-    private String hexCode;
 }

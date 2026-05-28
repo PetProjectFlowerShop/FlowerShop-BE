@@ -61,9 +61,9 @@ public class UserController {
         passwordRecoveryService.requestPasswordRecovery(request.email());
     }
 
-    @PostMapping("/password-recovery/confirm")
+    @PostMapping("/password-recovery/confirm/{token}")
     @ResponseStatus(HttpStatus.OK)
-    public void confirmPasswordRecovery(@Valid @RequestBody PasswordResetDto passwordResetDto) {
-        passwordRecoveryService.confirmPassword(passwordResetDto);
+    public void confirmPasswordRecovery(@PathVariable String token, @RequestBody @Valid PasswordResetDto passwordResetDto){
+        passwordRecoveryService.confirmPassword(token, passwordResetDto);
     }
 }
