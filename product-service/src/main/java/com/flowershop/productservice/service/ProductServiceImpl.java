@@ -53,7 +53,7 @@ public class ProductServiceImpl implements ProductService {
 
         return response;
     }
-
+    @Transactional
     @Override
     public ProductResponse updateProduct(Long id, ProductUpdateRequest request) {
         Product product = productRepository.findById(id).orElseThrow(() ->
@@ -85,7 +85,6 @@ public class ProductServiceImpl implements ProductService {
                 new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(id)));
             product.setBouquetType(type);
         }
-        product = productRepository.save(product);
         ProductResponse response = productMapper.convertProductToProductResponse(product);
 
         return response;

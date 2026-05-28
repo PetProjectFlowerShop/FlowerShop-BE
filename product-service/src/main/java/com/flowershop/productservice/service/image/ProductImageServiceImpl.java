@@ -10,12 +10,12 @@ import com.flowershop.productservice.repository.ProductImageRepository;
 import com.flowershop.productservice.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -38,7 +38,6 @@ public class ProductImageServiceImpl implements ProductImageService {
             productImage.setImageUrl(url);
             productImage = productImageRepository.save(productImage);
             ProductImageResponse response = productImageMapper.convert(productImage);
-            response.setProductId(productImage.getProduct().getId());
             productImageResponses.add(response);
         }
         return productImageResponses;
@@ -51,20 +50,19 @@ public class ProductImageServiceImpl implements ProductImageService {
         fileStorageService.deleteFile(productImage.getImageUrl());
         productImageRepository.delete(productImage);
     }
-
+@Transactional
     @Override
     public void setMainImage(Long productId, Long imageId) {
-        Optional<ProductImage> productImageOptional = productImageRepository.findByProductIdAndIsMainTrue(productId);
-        if (productImageOptional.isPresent()) {
-            ProductImage productImage = productImageOptional.get();
-            if (!Objects.equals(productImage.getProduct().getId(), productId)) {
-                productImage.setIsMain(false);
-                productImageRepository.save(productImage);
-                productImage = productImageRepository.findById(imageId).orElseThrow(() ->
-                    new NotFoundException(APIErrorMessage.PRODUCT_IMAGE_NOT_FOUND_BY_ID.getMessage(imageId)));
-                productImage.setIsMain(true);
-                productImageRepository.save(productImage);
-            }
+        Optional<ProductImage> oldProductImageOptional = productImageRepository.findByProductIdAndIsMainTrue(productId);
+        if (oldProductImageOptional.isPresent()) {
+            ProductImage productImage = oldProductImageOptional.get();
+            productImage.setIsMain(false);
+        }
+        ProductImage productImage = productImageRepository.findById(imageId)
+            .orElseThrow(() -> new NotFoundException(APIErrorMessage.PRODUCT_IMAGE_NOT_FOUND_BY_ID.getMessage(productId)));
+        if (productImage.getProduct().getId().equals(productId)){
+            productImage.setIsMain(true);
+
         }
 
     }
@@ -72,8 +70,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     public List<ProductImageResponse> getProductImages(Long productId) {
         return productImageRepository.findAllByProductId(productId).stream().map(productImage -> {
-            ProductImageResponse response=productImageMapper.convert(productImage);
-            response.setProductId(productImage.getProduct().getId());
+            ProductImageResponse response = productImageMapper.convert(productImage);
             return response;
 
         }).toList();
