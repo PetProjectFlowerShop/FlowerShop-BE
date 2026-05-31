@@ -19,6 +19,11 @@ public class AccessFilter implements GatewayFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
+        if (exchange.getRequest().getMethod() == HttpMethod.GET
+            && exchange.getRequest().getURI().getPath().startsWith("/flowers")) {
+            return chain.filter(exchange);
+        }
+
         String authHeader = exchange.getRequest()
             .getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
