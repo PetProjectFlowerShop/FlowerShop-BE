@@ -1,10 +1,8 @@
 package com.flowershop.productservice.dto;
 
-import com.flowershop.productservice.entity.ProductImage;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Getter
 @Setter
@@ -18,5 +16,5 @@ public class ProductFilterResponse {
     private Boolean isNew;
     private Boolean isPopular;
     private Boolean isSeasonOffer;
-    private List<ProductImage> images;
+    private String imageUrl;
 }
