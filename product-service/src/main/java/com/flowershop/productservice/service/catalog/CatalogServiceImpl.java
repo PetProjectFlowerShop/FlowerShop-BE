@@ -3,6 +3,7 @@ package com.flowershop.productservice.service.catalog;
 import com.flowershop.productservice.dto.ProductFilterRequest;
 import com.flowershop.productservice.dto.ProductFilterResponse;
 import com.flowershop.productservice.entity.Product;
+import com.flowershop.productservice.entity.ProductImage;
 import com.flowershop.productservice.repository.ProductRepository;
 import com.flowershop.productservice.repository.spec.ProductSorter;
 import com.flowershop.productservice.repository.spec.ProductSpecificationBuilder;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,10 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     private ProductFilterResponse mapProductToResponse(Product product) {
+        Optional<String> imageUrl = product.getImages().stream()
+            .filter(ProductImage::getIsMain)
+            .map(ProductImage::getImageUrl)
+            .findFirst();
         return ProductFilterResponse.builder()
             .id(product.getId())
             .name(product.getName())
@@ -43,7 +50,7 @@ public class CatalogServiceImpl implements CatalogService {
             .isNew(product.getIsNew())
             .isPopular(product.getIsPopular())
             .isSeasonOffer(product.getIsSeasonOffer())
-            .images(product.getImages())
+            .imageUrl(imageUrl.orElse(""))
             .build();
     }
 }
