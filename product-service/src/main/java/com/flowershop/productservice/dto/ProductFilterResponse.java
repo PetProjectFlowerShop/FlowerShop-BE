@@ -17,4 +17,8 @@ public class ProductFilterResponse {
     private Boolean isPopular;
     private Boolean isSeasonOffer;
     private String imageUrl;
+    private Integer height;
+    private Integer stemsCount;
+    private Long colorId;
+    private Long bouquetTypeId;
 }
