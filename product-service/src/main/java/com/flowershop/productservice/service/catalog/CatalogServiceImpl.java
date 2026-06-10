@@ -1,5 +1,8 @@
 package com.flowershop.productservice.service.catalog;
 
+import com.flowershop.productservice.dto.ColorDto;
+import com.flowershop.productservice.dto.FlowerTypeDto;
+import com.flowershop.productservice.dto.OccasionDto;
 import com.flowershop.productservice.dto.ProductFilterRequest;
 import com.flowershop.productservice.dto.ProductFilterResponse;
 import com.flowershop.productservice.entity.Product;
@@ -14,8 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +32,6 @@ public class CatalogServiceImpl implements CatalogService {
         return productRepository.findAll(spec, pageable)
             .map(this::mapProductToResponse);
     }
-
 
     private Pageable buildPage(ProductFilterRequest filter) {
         int page = filter.getPage() != null ? filter.getPage() : 0;
@@ -51,6 +53,12 @@ public class CatalogServiceImpl implements CatalogService {
             .isPopular(product.getIsPopular())
             .isSeasonOffer(product.getIsSeasonOffer())
             .imageUrl(imageUrl.orElse(""))
+            .height(product.getHeight())
+            .stemsCount(product.getStemsCount())
+            .colors(product.getColors().stream().map(c-> new ColorDto(c.getId(), c.getName())).collect(Collectors.toSet()))
+            .occasions(product.getOccasions().stream().map(o -> new OccasionDto(o.getId(), o.getName())).collect(Collectors.toSet()))
+            .flowerTypes(product.getFlowerTypes().stream().map(ft -> new FlowerTypeDto(ft.getId(), ft.getName())).collect(Collectors.toSet()))
+            .bouquetTypeId(product.getBouquetType().getId())
             .build();
     }
 }

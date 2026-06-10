@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class CatalogController {
     private final CatalogService service;
     @GetMapping
-    public Page<ProductFilterResponse> getAllNeeded(@RequestBody @Valid ProductFilterRequest request) {
+    public Page<ProductFilterResponse> getAllNeeded(@Valid ProductFilterRequest request) {
         return service.getSearchedProducts(request);
     }
 }

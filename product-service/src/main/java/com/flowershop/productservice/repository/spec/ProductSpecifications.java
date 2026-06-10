@@ -1,10 +1,11 @@
 package com.flowershop.productservice.repository.spec;
 
+import com.flowershop.productservice.entity.Color;
+import com.flowershop.productservice.entity.FlowerType;
 import com.flowershop.productservice.entity.Occasion;
 import com.flowershop.productservice.entity.Product;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
-
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -40,14 +41,20 @@ public class ProductSpecifications {
             cb.lessThanOrEqualTo(root.get("stemsCount"), maxNumberOfStems);
     }
 
-    public static Specification<Product> flowerTypeIn(Set<Long> ids) {
-        return (root, query, cb) ->
-            root.get("flowerType").get("id").in(ids);
+    public static Specification<Product> flowerTypesIn(Set<Long> ids) {
+        return (root, query, cb) -> {
+            Join<Product, FlowerType> join = root.join("flowerTypes");
+            query.distinct(true);
+            return join.get("id").in(ids);
+        };
     }
 
-    public static Specification<Product> colorIn(Set<Long> ids) {
-        return (root, query, cb) ->
-            root.get("color").get("id").in(ids);
+    public static Specification<Product> colorsIn(Set<Long> ids) {
+        return (root, query, cb) -> {
+            Join<Product, Color> join = root.join("colors");
+            query.distinct(true);
+            return join.get("id").in(ids);
+        };
     }
 
     public static Specification<Product> bouquetTypeIn(Set<Long> ids) {
