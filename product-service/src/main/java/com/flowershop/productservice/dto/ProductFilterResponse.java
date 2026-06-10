@@ -1,8 +1,8 @@
 package com.flowershop.productservice.dto;
 
 import lombok.*;
-
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -19,6 +19,8 @@ public class ProductFilterResponse {
     private String imageUrl;
     private Integer height;
     private Integer stemsCount;
-    private Long colorId;
+    private Set<ColorDto> colors;
+    private Set<OccasionDto> occasions;
+    private Set<FlowerTypeDto> flowerTypes;
     private Long bouquetTypeId;
 }

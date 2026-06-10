@@ -35,11 +35,11 @@ public class ProductSpecificationBuilder {
         }
 
         if (filter.getFlowerTypeId() != null && !filter.getFlowerTypeId().isEmpty()) {
-            spec = spec.and(ProductSpecifications.flowerTypeIn(filter.getFlowerTypeId()));
+            spec = spec.and(ProductSpecifications.flowerTypesIn(filter.getFlowerTypeId()));
         }
 
         if (filter.getColorId() != null && !filter.getColorId().isEmpty()) {
-            spec = spec.and(ProductSpecifications.colorIn(filter.getColorId()));
+            spec = spec.and(ProductSpecifications.colorsIn(filter.getColorId()));
         }
 
         if (filter.getBouquetTypeId() != null && !filter.getBouquetTypeId().isEmpty()) {
