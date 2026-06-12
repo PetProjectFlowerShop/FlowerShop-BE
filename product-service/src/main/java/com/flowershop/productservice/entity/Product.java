@@ -52,36 +52,51 @@ public class Product {
     private Integer stemsCount;
 
     @Column(name = "is_available")
+    @Builder.Default
     private Boolean isAvailable = true;
 
     @Column(name = "height", nullable = false)
     private Integer height;
 
     @Column(name = "discount_percent")
+    @Builder.Default
     private Integer discountPercent = 0;
 
     @Column(name = "is_new")
+    @Builder.Default
     private Boolean isNew = false;
 
     @Column(name = "is_popular")
+    @Builder.Default
     private Boolean isPopular = false;
 
     @Column(name = "is_season_offer")
+    @Builder.Default
     private Boolean isSeasonOffer = false;
 
     @Column(name = "is_recommended")
+    @Builder.Default
     private Boolean isRecommended = false;
 
     @Column(name = "created_at", updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @ManyToOne
-    @JoinColumn(name = "flower_type_id")
-    private FlowerType flowerType;
+    @ManyToMany
+    @JoinTable(
+        name = "product_flower_types",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "flower_type_id")
+    )
+    private Set<FlowerType> flowerTypes = new HashSet<>();
 
-    @ManyToOne()
-    @JoinColumn(name = "color_id")
-    private Color color;
+    @ManyToMany
+    @JoinTable(
+        name = "product_colors",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "color_id")
+    )
+    private Set<Color> colors = new HashSet<>();
 
     @ManyToOne()
     @JoinColumn(name = "bouquet_type_id")

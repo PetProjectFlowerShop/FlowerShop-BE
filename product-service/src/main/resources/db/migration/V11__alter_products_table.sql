@@ -1,0 +1,3 @@
+ALTER TABLE products
+DROP COLUMN IF EXISTS flower_type_id,
+DROP COLUMN IF EXISTS color_id;
