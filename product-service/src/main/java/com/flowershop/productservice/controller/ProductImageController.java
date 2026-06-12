@@ -1,6 +1,8 @@
 package com.flowershop.productservice.controller;
 
 import com.flowershop.productservice.dto.ProductImageResponse;
+import com.flowershop.productservice.dto.ProductResponse;
+import com.flowershop.productservice.service.ProductService;
 import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequestMapping("/image")
 public class ProductImageController {
     private final ProductImageService productImageService;
+    private final ProductService productService;
 
     @PostMapping("/add/{id}")
     public ResponseEntity<Void> addImages(@PathVariable("id") long id,
@@ -39,11 +42,10 @@ public class ProductImageController {
 
     }
 
-    @GetMapping("/{productId}")
-    public ResponseEntity<List<ProductImageResponse>> getProductImages(@PathVariable("productId") long productId) {
-        List<ProductImageResponse> productImages = productImageService.getProductImages(productId);
-        return ResponseEntity.ok(productImages);
-    }
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponse> getById(@PathVariable Long id) {
 
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
 
 }
