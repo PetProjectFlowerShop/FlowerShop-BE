@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,13 @@ public class CatalogServiceImpl implements CatalogService {
         Specification<Product> spec = ProductSpecificationBuilder.build(request);
         return productRepository.findAll(spec, pageable)
             .map(this::mapProductToResponse);
+    }
+
+    @Override
+    public List<ProductFilterResponse> getProductsByIds(List<Long> ids) {
+        return productRepository.findAllByIdIn(ids).stream()
+            .map(this::mapProductToResponse)
+            .collect(Collectors.toList());
     }
 
     private Pageable buildPage(ProductFilterRequest filter) {
