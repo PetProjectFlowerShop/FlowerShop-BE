@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -22,4 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         + "WHERE p.isRecommended = true "
         + "ORDER BY RANDOM() LIMIT 4")
     List<Product> findRandomRecommended();
+
+    @EntityGraph(attributePaths = {"images", "colors", "occasions", "flowerTypes"})
+    List<Product> findAllByIdIn(Collection<Long> ids);
 }
