@@ -1,6 +1,6 @@
 package com.flowershop.productservice.dto;
 
-import com.flowershop.productservice.dto.validation.ValidPriceRange;
+import com.flowershop.productservice.dto.validation.ValidRange;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -13,7 +13,9 @@ import java.util.Set;
 
 @Getter
 @Setter
-@ValidPriceRange
+@ValidRange(minField = "minPrice", maxField = "maxPrice", message = "minPrice must be <= maxPrice")
+@ValidRange(minField = "minHeight", maxField = "maxHeight", message = "minHeight must be <= maxHeight")
+@ValidRange(minField = "minNumberOfStems", maxField = "maxNumberOfStems", message = "minStems must be <= maxStems")
 public class ProductFilterRequest {
     private String keyword;
 
