@@ -15,6 +15,8 @@ import java.util.Set;
 @Setter
 @ValidPriceRange
 public class ProductFilterRequest {
+    private String keyword;
+
     @Min(0)
     private Integer page;
     @Min(1)

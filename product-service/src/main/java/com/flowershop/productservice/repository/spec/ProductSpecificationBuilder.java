@@ -50,8 +50,8 @@ public class ProductSpecificationBuilder {
             spec = spec.and(ProductSpecifications.occasionsIn(filter.getOccasionIds()));
         }
 
-        if (filter.getSortBy() != null) {
-
+        if (filter.getKeyword() != null && !filter.getKeyword().isEmpty()) {
+            spec = spec.and(ProductSpecifications.search(filter.getKeyword()));
         }
 
         return spec;

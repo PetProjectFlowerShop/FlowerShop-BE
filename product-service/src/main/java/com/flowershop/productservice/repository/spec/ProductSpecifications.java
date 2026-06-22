@@ -74,4 +74,16 @@ public class ProductSpecifications {
         return (root, query, cb)
             -> cb.isTrue(root.get("isAvailable"));
     }
+
+    public static Specification<Product> search(String keyword) {
+
+        return (root, query, cb) -> {
+            String pattern = "%" + keyword.toLowerCase() + "%";
+            return cb.or(cb.like(cb.lower(root.get("name")), pattern),
+                cb.like(cb.lower(root.get("description")), pattern),
+                cb.greaterThan(cb.function("similarity", Double.class, root.get("name"), cb.literal(keyword)), 0.3),
+                cb.greaterThan(cb.function("similarity", Double.class, root.get("description"), cb.literal(keyword)), 0.3));
+        };
+
+    }
 }
