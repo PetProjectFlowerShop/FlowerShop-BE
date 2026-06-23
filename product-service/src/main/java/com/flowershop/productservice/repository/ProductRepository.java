@@ -21,7 +21,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query(value = "SELECT p.id FROM Product p WHERE p.isRecommended = true ORDER BY RANDOM() LIMIT 4")
     List<Long> findRandomRecommendedIds();
 
-    @EntityGraph(attributePaths = {"images"})
+    @EntityGraph(attributePaths = "images")
     @Query("SELECT p FROM Product p WHERE p.id IN :ids")
     List<Product> findAllByIds(@Param("ids") List<Long> ids);
 

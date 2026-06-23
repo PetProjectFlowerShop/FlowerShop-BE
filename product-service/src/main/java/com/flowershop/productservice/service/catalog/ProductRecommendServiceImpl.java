@@ -21,6 +21,7 @@ public class ProductRecommendServiceImpl implements ProductRecommendService {
     @Override
     public List<ProductRecommendResponse> getRecommendations() {
         List<Long> ids = productRepository.findRandomRecommendedIds();
+
         return productRepository.findAllByIds(ids).stream()
             .map(productRecommendMapper::mapProductToRecommendResponse)
             .collect(Collectors.toList());
@@ -31,7 +32,6 @@ public class ProductRecommendServiceImpl implements ProductRecommendService {
         if (ids == null || ids.isEmpty() || ids.stream().allMatch(Objects::isNull)) {
             throw new IllegalArgumentException("Parameter 'ids' must contain at least one valid ID");
         }
-
         return productRepository.findAllByIdIn(ids).stream()
             .map(filterMapper::mapProductToResponse)
             .collect(Collectors.toList());
