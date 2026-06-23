@@ -2,14 +2,14 @@ package com.flowershop.productservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.Set;
 
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
-public class FlowerTypeDto {
+public class BouquetTypeDto {
     private Long id;
     private String name;
+    private Set<PackagingTypeDto> packagingTypes;
 }
