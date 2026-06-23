@@ -5,7 +5,9 @@ import com.flowershop.productservice.entity.FlowerType;
 import com.flowershop.productservice.entity.Occasion;
 import com.flowershop.productservice.entity.Product;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
+
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -78,11 +80,13 @@ public class ProductSpecifications {
     public static Specification<Product> search(String keyword) {
 
         return (root, query, cb) -> {
+            Join<Product, FlowerType> flowerJoin = root.join("flowerTypes", JoinType.LEFT);
             String pattern = "%" + keyword.toLowerCase() + "%";
             return cb.or(cb.like(cb.lower(root.get("name")), pattern),
                 cb.like(cb.lower(root.get("description")), pattern),
                 cb.greaterThan(cb.function("similarity", Double.class, root.get("name"), cb.literal(keyword)), 0.3),
-                cb.greaterThan(cb.function("similarity", Double.class, root.get("description"), cb.literal(keyword)), 0.3));
+                cb.greaterThan(cb.function("similarity", Double.class, root.get("description"), cb.literal(keyword)), 0.3),
+                cb.greaterThan(cb.function("similarity", Double.class, flowerJoin.get("name"), cb.literal(keyword)), 0.3));
         };
 
     }
