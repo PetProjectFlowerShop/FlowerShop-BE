@@ -22,7 +22,7 @@ public class ProductCreateRequest {
     private Integer stemsCount;
     @Min(value =0,message = "Min height is 0")
     private Integer height;
-    private Long flowerTypeId;
-    private Long colorId;
+    private Long flowerTypeId;//(передаем flowerTypeId)
+    private Long colorId;//(передаем set ColorId)
     private Long bouquetTypeId;
 }

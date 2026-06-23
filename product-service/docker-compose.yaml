@@ -35,6 +35,3 @@ services:
       - .env
     restart: unless-stopped
 
-
-volumes:
-  postgres_product_data:

@@ -32,8 +32,8 @@ public class ProductResponse implements Serializable {
     private Boolean isRecommended;
     private LocalDateTime createdAt;
 
-    private FlowerType flowerType;
-    private Color color;
+    private FlowerType flowerType;//(Сделать сет в флавер тайп дто)
+    private Color color;//(Сделать сет в колор  дто)
     private BouquetType bouquetType;
 
     private List<ProductImageResponse> images;
