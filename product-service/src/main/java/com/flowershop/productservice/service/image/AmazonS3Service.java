@@ -15,29 +15,30 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AmazonS3Service implements FileStorageService {
     private final S3Client s3Client;
+    private final ImageConverterService imageConverterService;
     @Value("${aws.s3.bucket-name}")
     private String bucket;
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-        String[] parts = file.getOriginalFilename().split("\\.");
-        String key = (UUID.randomUUID()) + "." + parts[parts.length - 1];
+        byte[] imageBytes = imageConverterService.convertToWebp(file);
+        String key = (UUID.randomUUID()) + ".webp";
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucket)
             .key(key)
-            .contentType(file.getContentType())
+            .contentType("image/webp")
             .acl("public-read")
             .build();
-        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        s3Client.putObject(putObjectRequest,  RequestBody.fromBytes(imageBytes));
         return key;
     }
 
     @Override
     public void deleteFile(String fileUrl) {
         s3Client.deleteObject(builder -> builder
-               .bucket(bucket)
-                .key(fileUrl)
-                .build()
+            .bucket(bucket)
+            .key(fileUrl)
+            .build()
         );
 
 

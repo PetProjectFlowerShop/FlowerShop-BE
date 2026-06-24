@@ -7,7 +7,11 @@ import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    imports = {Object.class}
+)
 public interface ProductImageMapper {
 
     ProductImageResponse convert(ProductImage productImage);

@@ -7,9 +7,10 @@ spring:
     username: ${PRODUCT_DB_USER}
     password: ${PRODUCT_DB_PASSWORD}
 
+
   jpa:
     hibernate:
-    ddl-auto: validate
+      ddl-auto: validate
 
   flyway:
     enabled: true

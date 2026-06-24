@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class ProductUpdateRequest implements Serializable {
     private Boolean isPopular;
     private Boolean isSeasonOffer ;
     private Boolean isRecommended ;
-    private Long flowerTypeId;
-    private Long colorId;
+    private Set<Long> flowerTypeIds;
+    private Set<Long> colorIds;
     private Long bouquetTypeId;
 }

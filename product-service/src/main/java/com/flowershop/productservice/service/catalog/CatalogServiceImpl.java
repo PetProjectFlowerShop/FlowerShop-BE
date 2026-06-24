@@ -42,16 +42,16 @@ public class CatalogServiceImpl implements CatalogService {
 
     private ProductFilterResponse mapProductToResponse(Product product) {
         Optional<String> imageUrl = product.getImages().stream()
-            .filter(ProductImage::getIsMain)
+            .filter(ProductImage::getMain)
             .map(ProductImage::getImageUrl)
             .findFirst();
         return ProductFilterResponse.builder()
             .id(product.getId())
             .name(product.getName())
             .price(product.getPrice())
-            .isNew(product.getIsNew())
-            .isPopular(product.getIsPopular())
-            .isSeasonOffer(product.getIsSeasonOffer())
+            .isNew(product.getNew())
+            .isPopular(product.getPopular())
+            .isSeasonOffer(product.getSeasonOffer())
             .imageUrl(imageUrl.orElse(""))
             .height(product.getHeight())
             .stemsCount(product.getStemsCount())
