@@ -6,4 +6,5 @@ import org.springframework.data.domain.Page;
 
 public interface CatalogService {
     Page<ProductFilterResponse> getSearchedProducts(ProductFilterRequest request);
+
 }

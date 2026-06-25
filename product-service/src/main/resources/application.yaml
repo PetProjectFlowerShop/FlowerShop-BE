@@ -7,10 +7,15 @@ spring:
     username: ${PRODUCT_DB_USER}
     password: ${PRODUCT_DB_PASSWORD}
 
+  data:
+    redis:
+      url: ${REDIS_URL}
+      timeout: 2s
 
   jpa:
     hibernate:
-      ddl-auto: validate
+    ddl-auto: validate
+    open-in-view: false
 
   flyway:
     enabled: true

@@ -30,7 +30,7 @@ public class BouquetType {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "bouquet_packaging",
         joinColumns = @JoinColumn(name = "bouquet_type_id"),
