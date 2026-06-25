@@ -2,6 +2,8 @@ package com.flowershop.productservice.service.image;
 
 import com.flowershop.productservice.dto.ProductImageResponse;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ public interface ProductImageService {
      * @param files     the list of multipart files to be uploaded.
      * @return a list of {@link ProductImageResponse} containing image metadata and URLs.
      */
-    List<ProductImageResponse> addImages(Long productId, List<MultipartFile> files);
+    List<ProductImageResponse> addImages(Long productId, MultipartFile[] files) throws IOException;
 
     /**
      * Deletes a specific image from both the database and cloud storage.

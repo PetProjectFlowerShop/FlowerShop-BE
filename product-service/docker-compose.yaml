@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   postgres-product:
     image: postgres:17-alpine
@@ -6,9 +8,9 @@ services:
     ports:
       - "${PRODUCT_DB_PORT:-5433}:5432"
     environment:
-      POSTGRES_USER: ${PRODUCT_DB_USER:-product_user}
-      POSTGRES_PASSWORD: ${PRODUCT_DB_PASSWORD:-product_pass}
-      POSTGRES_DB: ${PRODUCT_DB_NAME:-product_db}
+      POSTGRES_USER: ${PRODUCT_DB_USER}
+      POSTGRES_PASSWORD: ${PRODUCT_DB_PASSWORD}
+      POSTGRES_DB: ${PRODUCT_DB_NAME}
     volumes:
       - postgres_product_data:/var/lib/postgresql/data
     healthcheck:

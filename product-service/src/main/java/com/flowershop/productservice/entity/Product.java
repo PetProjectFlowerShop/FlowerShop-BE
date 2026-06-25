@@ -26,11 +26,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "products")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -111,5 +111,7 @@ public class Product {
         joinColumns = @JoinColumn(name = "product_id"),
         inverseJoinColumns = @JoinColumn(name = "occasion_id")
     )
+
     private Set<Occasion> occasions = new HashSet<>();
+
 }
