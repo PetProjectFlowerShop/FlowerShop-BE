@@ -6,13 +6,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
     imports = {Object.class}
 )
 public interface ProductImageMapper {
-
+    @Mapping(source = "product.id", target = "productId")
     ProductImageResponse convert(ProductImage productImage);
 }

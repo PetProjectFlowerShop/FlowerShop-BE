@@ -37,12 +37,10 @@ public class ProductServiceImpl implements ProductService {
                 new NotFoundException(APIErrorMessage.COLOR_NOT_FOUND_BY_ID.getMessage(id))))
             .collect(Collectors.toSet());
 
-
         Set<FlowerType> flowerTypes = request.getFlowerTypeIds().stream()
             .map(id -> flowerTypeRepository.findById(id).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(id))))
             .collect(Collectors.toSet());
-
 
         BouquetType bouquetType = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(request.getBouquetTypeId())));
@@ -80,13 +78,13 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
         product.setStemsCount(request.getStemsCount());
-        product.setAvailable(request.getIsAvailable());
+        product.setIsAvailable(request.getIsAvailable());
         product.setHeight(request.getHeight());
         product.setDiscountPercent(request.getDiscountPercent());
-        product.setNew(request.getIsNew());
-        product.setPopular(request.getIsPopular());
-        product.setSeasonOffer(request.getIsSeasonOffer());
-        product.setRecommended(request.getIsRecommended());
+        product.setIsNew(request.getIsNew());
+        product.setIsPopular(request.getIsPopular());
+        product.setIsSeasonOffer(request.getIsSeasonOffer());
+        product.setIsRecommended(request.getIsRecommended());
         Set<Color> colors = request.getColorIds().stream()
             .map(colorId -> colorRepository.findById(colorId).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.COLOR_NOT_FOUND_BY_ID.getMessage(colorId))))

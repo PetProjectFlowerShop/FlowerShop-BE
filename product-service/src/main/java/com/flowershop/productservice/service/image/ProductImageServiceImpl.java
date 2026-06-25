@@ -56,12 +56,12 @@ public class ProductImageServiceImpl implements ProductImageService {
         Optional<ProductImage> oldProductImageOptional = productImageRepository.findByProductIdAndIsMainTrue(productId);
         if (oldProductImageOptional.isPresent()) {
             ProductImage productImage = oldProductImageOptional.get();
-            productImage.setMain(false);
+            productImage.setIsMain(false);
         }
         ProductImage productImage = productImageRepository.findById(imageId)
             .orElseThrow(() -> new NotFoundException(APIErrorMessage.PRODUCT_IMAGE_NOT_FOUND_BY_ID.getMessage(productId)));
         if (productImage.getProduct().getId().equals(productId)){
-            productImage.setMain(true);
+            productImage.setIsMain(true);
 
         }
 

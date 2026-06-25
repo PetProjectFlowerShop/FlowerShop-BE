@@ -1,5 +1,6 @@
 package com.flowershop.productservice.exception;
 
+import com.flowershop.productservice.exceptions.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,6 +52,16 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 Collections.emptyMap(),
                 LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(
+                ex.getMessage(),
+                Collections.emptyMap(),
+                LocalDateTime.now()
+            ));
     }
 
     @ExceptionHandler(Exception.class)

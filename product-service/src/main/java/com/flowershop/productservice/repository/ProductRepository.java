@@ -12,9 +12,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+    @EntityGraph(attributePaths = {"colors", "flowerTypes", "images", "occasions", "bouquetType.packagingTypes"})
+    Optional<Product> findById(Long id);
+
     @EntityGraph(attributePaths = {"images", "colors", "occasions", "flowerTypes"})
     Page<Product> findAll(Specification<Product> spec, Pageable page);
 
@@ -27,4 +31,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @EntityGraph(attributePaths = {"images", "colors", "occasions", "flowerTypes"})
     List<Product> findAllByIdIn(Collection<Long> ids);
+
 }
