@@ -37,10 +37,12 @@ public class AccessFilter implements GatewayFilter {
             return onError(exchange, HttpStatus.UNAUTHORIZED);
         }
         String email = jwtService.extractEmail(token);
+        String role = jwtService.extractRole(token);
 
         return chain.filter(
             exchange.mutate()
-                .request(r -> r.header("X-User-Email", email))
+                .request(r -> r.header("X-User-Email", email)
+                    .header("X-User-Role", role))
                 .build());
     }
 
