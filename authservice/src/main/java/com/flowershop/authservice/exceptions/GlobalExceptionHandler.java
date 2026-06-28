@@ -6,7 +6,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +16,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<Map<String, Object>> handleUserWithEmailAlreadyExistsException(
-            EmailAlreadyExistsException ex) {
+        EmailAlreadyExistsException ex) {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.CONFLICT);
@@ -30,12 +29,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleValidationException(
-            MethodArgumentNotValidException ex) {
+        MethodArgumentNotValidException ex) {
 
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
@@ -52,16 +51,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
+    @ExceptionHandler(InvalidGoogleTokenException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidGoogleTokenException(InvalidGoogleTokenException ex) {
+        Map<String, Object> response = prepareErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
     @ExceptionHandler(EmailNotRegisteredException.class)
     public ResponseEntity<Map<String, Object>> handleEmailNotRegisteredException(EmailNotRegisteredException ex) {
         Map<String, Object> response = prepareErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    @ExceptionHandler(InvalidGoogleTokenException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidGoogleTokenException(InvalidGoogleTokenException ex) {
-        Map<String, Object> response = prepareErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
+        Map<String, Object> response = prepareErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     private Map<String, Object> prepareErrorResponse(HttpStatus status, String error, String message) {
