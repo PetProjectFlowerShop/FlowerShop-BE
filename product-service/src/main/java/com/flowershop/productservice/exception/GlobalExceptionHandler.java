@@ -4,6 +4,7 @@ import com.flowershop.productservice.exceptions.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,11 +25,7 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage()));
         ex.getBindingResult().getGlobalErrors().forEach(error ->
             errors.put(error.getObjectName(), error.getDefaultMessage()));
-        return ResponseEntity.badRequest().body(
-            new ErrorResponse(
-                "Validation failed",
-                errors,
-                LocalDateTime.now()));
+        return ResponseEntity.badRequest().body(error("Validation failed", errors));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -39,22 +36,12 @@ public class GlobalExceptionHandler {
         Map<String, String> details = new HashMap<>();
         details.put("requiredParameter", ex.getParameterName());
         details.put("expectedType", ex.getParameterType());
-
-        ErrorResponse response = new ErrorResponse(
-            errorMessage,
-            details,
-            LocalDateTime.now()
-        );
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.badRequest().body(error(errorMessage, details));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(
-            new ErrorResponse(
-                ex.getMessage(),
-                Collections.emptyMap(),
-                LocalDateTime.now()));
+        return ResponseEntity.badRequest().body(error(ex.getMessage(), Collections.emptyMap()));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -64,30 +51,31 @@ public class GlobalExceptionHandler {
             ex.getValue(),
             ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown"
         );
-        return ResponseEntity.badRequest().body(
-            new ErrorResponse(
-                message,
-                Collections.emptyMap(),
-                LocalDateTime.now()));
+        return ResponseEntity.badRequest().body(error(message, Collections.emptyMap()));
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
+        AuthorizationDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(error("Access denied", Collections.emptyMap()));
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse(
-                ex.getMessage(),
-                Collections.emptyMap(),
-                LocalDateTime.now()
-            ));
+            .body(error(ex.getMessage(), Collections.emptyMap()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleAll(Exception ex) {
-       log.error("Internal server error caught: ", ex);
+    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
+        log.error("Internal server error caught: ", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            new ErrorResponse(
-                ex.getMessage(),
-                Collections.emptyMap(),
-                LocalDateTime.now()));
+            error("Internal server error", Collections.emptyMap()));
+    }
+
+    private ErrorResponse error(String message, Map<String, String> details) {
+        return new ErrorResponse(message, details, LocalDateTime.now());
     }
 }

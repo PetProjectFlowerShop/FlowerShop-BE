@@ -49,7 +49,7 @@ public class UserService {
                 .isMarketingAllowed(request.getIsMarketingAllow())
                 .build();
         userRepository.save(user);
-        return new AuthResponse(jwtUtils.generateToken(user.getEmail()));
+        return new AuthResponse(jwtUtils.generateToken(user.getEmail(), user.getRole().name()));
     }
 
     public LoginResponseDto login(LoginRequest request) {
@@ -59,7 +59,7 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException(ApiErrorMessage.INVALID_PASSWORD.getMessage(request.getEmail()));
         }
-        String jwtToken = jwtUtils.generateToken(request.getEmail());
+        String jwtToken = jwtUtils.generateToken(request.getEmail(), user.getRole().name());
         return new LoginResponseDto(jwtToken, user.getRole().name());
 
     }
@@ -72,7 +72,7 @@ public class UserService {
         }
         Optional<User> user = userRepository.findByProviderIdAndEmail(request.providerId(), request.email());
         if (user.isPresent()) {
-            return new AuthResponse(jwtUtils.generateToken(user.get().getEmail()));
+            return new AuthResponse(jwtUtils.generateToken(user.get().getEmail(), user.get().getRole().name()));
         }
         User newUser = User.builder()
                 .firstname(request.firstName())
@@ -84,6 +84,6 @@ public class UserService {
                 .isMarketingAllowed(true)
                 .build();
         userRepository.save(newUser);
-        return new AuthResponse(jwtUtils.generateToken(newUser.getEmail()));
+        return new AuthResponse(jwtUtils.generateToken(newUser.getEmail(), newUser.getRole().name()));
     }
 }

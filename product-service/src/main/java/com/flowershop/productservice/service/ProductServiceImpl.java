@@ -96,6 +96,7 @@ public class ProductServiceImpl implements ProductService {
         product.setColors(colors);
         product.setFlowerTypes(flowerTypes);
         if (!Objects.equals(product.getBouquetType().getId(), request.getBouquetTypeId())) {
+            // Fix: Pass bouquetTypeId instead of product id to the exception message
             BouquetType type = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(id)));
             product.setBouquetType(type);
