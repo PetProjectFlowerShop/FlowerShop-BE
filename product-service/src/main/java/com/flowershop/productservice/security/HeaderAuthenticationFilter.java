@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
+@Slf4j
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -29,6 +31,10 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                 new UsernamePasswordAuthenticationToken(email, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(auth);
+
+            log.info("User authenticated: email={}, authorities={}", email, authorities);
+        } else {
+            log.warn("Authentication headers are missing for request: {}", request.getRequestURI());
         }
         filterChain.doFilter(request, response);
     }
