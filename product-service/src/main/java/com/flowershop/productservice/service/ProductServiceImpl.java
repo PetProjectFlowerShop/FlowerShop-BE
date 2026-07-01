@@ -3,6 +3,7 @@ package com.flowershop.productservice.service;
 import com.flowershop.productservice.constants.APIErrorMessage;
 import com.flowershop.productservice.dto.*;
 import com.flowershop.productservice.entity.*;
+import com.flowershop.productservice.exceptions.InvalidDataException;
 import com.flowershop.productservice.exceptions.NotFoundException;
 import com.flowershop.productservice.mapper.ProductImageMapper;
 import com.flowershop.productservice.mapper.ProductMapper;
@@ -12,8 +13,10 @@ import com.flowershop.productservice.repository.FlowerTypeRepository;
 import com.flowershop.productservice.repository.ProductRepository;
 import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +33,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
 
+    @Transactional
     @Override
     public ProductResponse createProduct(ProductCreateRequest request) {
         Set<Color> colors = request.getColorIds().stream()
@@ -43,7 +47,12 @@ public class ProductServiceImpl implements ProductService {
                 new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(id))))
             .collect(Collectors.toSet());
 
-
+        if (colors.isEmpty()) {
+            throw new InvalidDataException("Min one color should be present");
+        }
+        if (flowerTypes.isEmpty()) {
+            throw new InvalidDataException("Min one flower Type should be present");
+        }
         BouquetType bouquetType = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(request.getBouquetTypeId())));
         Product product = productMapper.create(request);
@@ -95,11 +104,17 @@ public class ProductServiceImpl implements ProductService {
             .map(flowerTypeId -> flowerTypeRepository.findById(flowerTypeId).orElseThrow(() ->
                 new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(flowerTypeId))))
             .collect(Collectors.toSet());
+        if (colors.isEmpty()) {
+            throw new InvalidDataException("Min one color should be present");
+        }
+        if (flowerTypes.isEmpty()) {
+            throw new InvalidDataException("Min one flower Type should be present");
+        }
         product.setColors(colors);
         product.setFlowerTypes(flowerTypes);
         if (!Objects.equals(product.getBouquetType().getId(), request.getBouquetTypeId())) {
             BouquetType type = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
-                new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(id)));
+                new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(request.getBouquetTypeId())));
             product.setBouquetType(type);
         }
         ProductResponse response = productMapper.convertProductToProductResponse(product);
@@ -122,15 +137,17 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
 
     }
-    private Set<ColorDto> convertColorsToColorDtos(Set<Color>colors){
+
+    private Set<ColorDto> convertColorsToColorDtos(Set<Color> colors) {
         return colors.stream()
-            .map(c->new ColorDto(c.getId(),c.getName()))
+            .map(c -> new ColorDto(c.getId(), c.getName()))
             .collect(Collectors.toSet());
 
     }
-    private Set<FlowerTypeDto>convertFlowerTypesToFlowerTypeDtos(Set<FlowerType>flowerTypes){
+
+    private Set<FlowerTypeDto> convertFlowerTypesToFlowerTypeDtos(Set<FlowerType> flowerTypes) {
         return flowerTypes.stream()
-            .map(f->new FlowerTypeDto(f.getId(),f.getName()))
+            .map(f -> new FlowerTypeDto(f.getId(), f.getName()))
             .collect(Collectors.toSet());
     }
 }
