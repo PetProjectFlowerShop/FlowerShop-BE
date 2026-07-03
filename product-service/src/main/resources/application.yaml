@@ -14,8 +14,10 @@ spring:
 
   jpa:
     hibernate:
-    ddl-auto: validate
+      ddl-auto: validate
     open-in-view: false
+    properties:
+      default_batch_fetch_size: 20
 
   flyway:
     enabled: true

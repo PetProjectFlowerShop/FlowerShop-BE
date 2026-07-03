@@ -1,6 +1,5 @@
 package com.flowershop.productservice.repository.spec;
 
-import com.flowershop.productservice.entity.Color;
 import com.flowershop.productservice.entity.FlowerType;
 import com.flowershop.productservice.entity.Occasion;
 import com.flowershop.productservice.entity.Product;
@@ -44,19 +43,14 @@ public class ProductSpecifications {
     }
 
     public static Specification<Product> flowerTypesIn(Set<Long> ids) {
-        return (root, query, cb) -> {
-            Join<Product, FlowerType> join = root.join("flowerTypes");
-            query.distinct(true);
-            return join.get("id").in(ids);
-        };
+        return (root, query, cb) ->
+            root.get("flowerTypes").get("id").in(ids);
+
     }
 
     public static Specification<Product> colorsIn(Set<Long> ids) {
-        return (root, query, cb) -> {
-            Join<Product, Color> join = root.join("colors");
-            query.distinct(true);
-            return join.get("id").in(ids);
-        };
+        return (root, query, cb) ->
+            root.get("colors").get("id").in(ids);
     }
 
     public static Specification<Product> bouquetTypeIn(Set<Long> ids) {

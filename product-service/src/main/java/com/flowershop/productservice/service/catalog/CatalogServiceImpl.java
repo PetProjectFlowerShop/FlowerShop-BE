@@ -14,9 +14,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CatalogServiceImpl implements CatalogService {
     private final ProductRepository productRepository;
     private final FilterMapper filterMapper;
@@ -25,8 +31,14 @@ public class CatalogServiceImpl implements CatalogService {
     public Page<ProductFilterResponse> getSearchedProducts(ProductFilterRequest request) {
         Pageable pageable = buildPage(request);
         Specification<Product> spec = ProductSpecificationBuilder.build(request);
-        return productRepository.findAll(spec, pageable)
-            .map(filterMapper::mapProductToResponse);
+        Page<Product> page = productRepository.findAll(spec, pageable);
+        List<Long> ids = page.getContent().stream()
+            .map(Product::getId)
+            .toList();
+        List<Product> products = productRepository.findAllWithImages(ids);
+        Map<Long, Product> map = products.stream()
+            .collect(Collectors.toMap(Product::getId, p -> p));
+        return page.map(p -> filterMapper.mapProductToResponse(map.get(p.getId())));
     }
 
     private Pageable buildPage(ProductFilterRequest filter) {
