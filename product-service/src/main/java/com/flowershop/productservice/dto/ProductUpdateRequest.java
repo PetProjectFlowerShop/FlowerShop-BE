@@ -1,6 +1,4 @@
 package com.flowershop.productservice.dto;
-
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -44,8 +42,9 @@ public class ProductUpdateRequest implements Serializable {
     private Boolean isSeasonOffer ;
     @NotNull(message = "is Recommended Offer must to present")
     private Boolean isRecommended ;
+    @NotNull(message = "Flower typeIds is must to present")
     private Set<Long> flowerTypeIds;
     private Set<Long> colorIds;
-    @Min(value = 1,message = "BouquetTypeId must be present")
+    @NotNull(message = "BouquetTypeId must be present")
     private Long bouquetTypeId;
 }
