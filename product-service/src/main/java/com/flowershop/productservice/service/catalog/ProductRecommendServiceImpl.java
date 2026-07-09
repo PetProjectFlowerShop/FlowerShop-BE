@@ -22,7 +22,7 @@ public class ProductRecommendServiceImpl implements ProductRecommendService {
     public List<ProductRecommendResponse> getRecommendations() {
         List<Long> ids = productRepository.findRandomRecommendedIds();
 
-        return productRepository.findAllByIds(ids).stream()
+        return productRepository.findAllWithImages(ids).stream()
             .map(productRecommendMapper::mapProductToRecommendResponse)
             .collect(Collectors.toList());
     }

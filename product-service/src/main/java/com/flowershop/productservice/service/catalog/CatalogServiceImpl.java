@@ -35,10 +35,8 @@ public class CatalogServiceImpl implements CatalogService {
         List<Long> ids = page.getContent().stream()
             .map(Product::getId)
             .toList();
-        List<Product> products = productRepository.findAllByIds(ids);
-        Map<Long, Product> map = products.stream()
-            .collect(Collectors.toMap(Product::getId, p -> p));
-        return page.map(p -> filterMapper.mapProductToResponse(map.get(p.getId())));
+        productRepository.findAllByIds(ids);
+        return page.map(filterMapper::mapProductToResponse);
     }
 
     private Pageable buildPage(ProductFilterRequest filter) {
