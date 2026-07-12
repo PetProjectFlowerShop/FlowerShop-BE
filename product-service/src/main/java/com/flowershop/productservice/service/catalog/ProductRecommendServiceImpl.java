@@ -1,5 +1,6 @@
 package com.flowershop.productservice.service.catalog;
 
+import com.flowershop.productservice.constants.APIErrorMessage;
 import com.flowershop.productservice.dto.ProductFilterResponse;
 import com.flowershop.productservice.dto.ProductRecommendResponse;
 import com.flowershop.productservice.mapper.FilterMapper;
@@ -21,7 +22,6 @@ public class ProductRecommendServiceImpl implements ProductRecommendService {
     @Override
     public List<ProductRecommendResponse> getRecommendations() {
         List<Long> ids = productRepository.findRandomRecommendedIds();
-
         return productRepository.findAllByIds(ids).stream()
             .map(productRecommendMapper::mapProductToRecommendResponse)
             .collect(Collectors.toList());
@@ -30,8 +30,9 @@ public class ProductRecommendServiceImpl implements ProductRecommendService {
     @Override
     public List<ProductFilterResponse> getProductsByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty() || ids.stream().allMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("Parameter 'ids' must contain at least one valid ID");
+            throw new IllegalArgumentException(APIErrorMessage.IDS_REQUIRED_ERROR.getMessage());
         }
+
         return productRepository.findAllByIdIn(ids).stream()
             .map(filterMapper::mapProductToResponse)
             .collect(Collectors.toList());

@@ -37,4 +37,3 @@ public class FilterOptionsServiceImpl implements FilterOptionsService {
             .build();
     }
 }
-
