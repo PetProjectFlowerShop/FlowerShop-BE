@@ -25,23 +25,11 @@ graph TD
 The project follows a **microservices architecture**.
 
 Current services:
-
 - API Gateway
 - Eureka Server
 - User Service
 - Product Service
 - Order Service
-
-## 🚀 Features
-
-- User authentication with JWT
-- Product catalog
-- Advanced product filtering
-- Multiple flower types and colors per product
-- Order management
-- REST API
-- Swagger API documentation
-- Docker support
 
 ## 🛠️ Tech Stack
 
@@ -56,3 +44,16 @@ Current services:
 - Docker & Docker Compose
 - AWS S3
 - Maven
+
+## 🚀 Features
+
+- User authentication with JWT
+- Product catalog
+- Advanced product filtering
+- Multiple flower types and colors per product
+- Order management
+- REST API
+- Swagger API documentation
+- Docker support
+
+
