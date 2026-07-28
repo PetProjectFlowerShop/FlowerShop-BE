@@ -1,0 +1,754 @@
+openapi: 3.0.1
+servers:
+
+  - description: Api gateway for floria shop
+    url: https://floria-shop-api-34kp.onrender.com
+    # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/floria-466/Floria/1.0.0
+info:
+  title: Floria Shop API
+  version: 1.0.0
+  description: API for Floria shop
+
+security:
+  - application:
+      - read
+      - write
+paths:
+  /flowers/{id}:
+    get:
+      tags:
+        - Product service
+      summary: Get product by ID
+      security: []
+      description: |
+        Returns detailed information about a specific flower product.
+
+        The response includes:
+        - Basic product information
+        - Description
+        - Flower types
+        - Colors
+        - Bouquet type and available packaging options
+        - Product images
+
+      operationId: getProductById
+
+      parameters:
+        - name: id
+          in: path
+          description: Product identifier
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 12
+
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+
+        '400':
+          description: invalid id parameter
+
+        '404':
+          description: Product with the specified ID was not found
+
+        '500':
+          description: Internal server error
+  /flowers/search:
+    get:
+      tags:
+        - Product service
+      summary: Search flower products
+      security: []
+      description: |
+        Returns a paginated list of flower products matching the provided filters.
+
+        Supports filtering by:
+        - Price range
+        - Height range
+        - Number of stems range
+        - Flower types
+        - Colors
+        - Bouquet types
+        - Occasions
+
+        Supports sorting by:
+        - price
+      operationId: searchProducts
+
+      parameters:
+        - name: page
+          in: query
+          description: Page number (zero-based)
+          schema:
+            type: integer
+            minimum: 0
+          example: 0
+
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+          example: 12
+
+        - name: keyword
+          in: query
+          description: Search keyword used to find products by product name, product description, flower type name
+          schema:
+            type: string
+            example: rose
+
+        - name: minPrice
+          in: query
+          description: Minimum product price
+          schema:
+            type: number
+            minimum: 0
+          example: 20.00
+
+        - name: maxPrice
+          in: query
+          description: Maximum product price
+          schema:
+            type: number
+            minimum: 0
+          example: 150.00
+
+        - name: minHeight
+          in: query
+          description: Minimum bouquet height in centimeters
+          schema:
+            type: integer
+            minimum: 0
+          example: 20
+
+        - name: maxHeight
+          in: query
+          description: Maximum bouquet height in centimeters
+          schema:
+            type: integer
+            minimum: 0
+          example: 80
+
+        - name: minNumberOfStems
+          in: query
+          description: Minimum number of stems
+          schema:
+            type: integer
+            minimum: 0
+          example: 3
+
+        - name: maxNumberOfStems
+          in: query
+          description: Maximum number of stems
+          schema:
+            type: integer
+            minimum: 0
+          example: 55
+
+        - name: flowerTypeId
+          in: query
+          description: Flower type identifiers
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          style: form
+          explode: true
+
+        - name: colorId
+          in: query
+          description: Flower color identifiers
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          style: form
+          explode: true
+          # example: [1, 4]
+
+        - name: bouquetTypeId
+          in: query
+          description: Bouquet type identifiers
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          style: form
+          explode: true
+          # example: [2]
+
+        - name: occasionIds
+          in: query
+          description: Occasion identifiers
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          style: form
+          explode: true
+          # example: [1, 3]
+
+        # - name: isPopular
+        #   in: query
+        #   description: Filter only popular products
+        #   schema:
+        #     type: boolean
+        #   example: true
+
+        - name: sortBy
+          in: query
+          description: Sorting field
+          schema:
+            type: string
+            enum:
+              - price
+              - isPopular
+          example: price
+
+        - name: sortOrder
+          in: query
+          description: Sorting direction
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          example: asc
+
+      responses:
+        '200':
+          description: Products found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductFilterResponse'
+                  page:
+                    $ref: '#/components/schemas/PageInfo'
+        '400':
+          description: Validation error or invalid filter values
+        '500':
+          description: Internal server error
+
+  /flowers/recommendations:
+    get:
+      tags:
+        - Product service
+      summary: Get recommended products
+      description: |
+        Returns a list (4) of recommended flower products
+      security: []
+      operationId: getRecommendations
+      responses:
+        '200':
+          description: Recommended products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductRecommendResponse'
+
+
+  /flowers/batch:
+    get:
+      tags:
+        - Product service
+      summary: Get products by IDs
+      description: |
+        Returns a list of products matching the provided product IDs.
+      security: []
+      operationId: getProductsByIds
+
+      parameters:
+        - name: ids
+          in: query
+          description: List of product IDs.
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          style: form
+          explode: true
+          example:
+            - 4
+            - 8
+
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductFilterResponse'
+
+        '400':
+          description: Missing or invalid 'ids' query parameter
+
+        '500':
+          description: Internal server error
+  /flowers/filters:
+    get:
+      tags:
+        - Product service
+      summary: Get available product filter options
+      security: []
+      description: |
+        Returns all available filter options for the product catalog.
+
+        The response includes:
+        - Flower types
+        - Colors
+        - Bouquet types with available packaging options
+        - Occasions
+
+      operationId: getFilterOptions
+
+      responses:
+        '200':
+          description: Filter options retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductFilterOptionsResponse'
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    ProductFilterRequest:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 0
+          description: Page number (zero-based)
+          example: 0
+
+        size:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Number of items per page
+          example: 12
+
+        minPrice:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 20.00
+
+        maxPrice:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 150.00
+
+        minHeight:
+          type: integer
+          minimum: 0
+          example: 20
+
+        maxHeight:
+          type: integer
+          minimum: 0
+          example: 80
+
+        minNumberOfStems:
+          type: integer
+          minimum: 0
+          example: 3
+
+        maxNumberOfStems:
+          type: integer
+          minimum: 0
+          example: 20
+
+        flowerTypeId:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [1, 2]
+
+        colorId:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [1, 4]
+
+        bouquetTypeId:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [2]
+
+        occasionIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [1, 3]
+
+        isPopular:
+          type: boolean
+          example: true
+
+        sortBy:
+          type: string
+          enum:
+            - price
+          example: price
+
+        sortOrder:
+          type: string
+          enum:
+            - asc
+            - desc
+          example: asc
+
+    ProductFilterResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        name:
+          type: string
+          example: Red Rose Bouquet
+
+        price:
+          type: number
+          format: decimal
+          example: 49.99
+
+        isNew:
+          type: boolean
+          example: true
+
+        isPopular:
+          type: boolean
+          example: true
+
+        isSeasonOffer:
+          type: boolean
+          example: false
+
+        imageUrl:
+          type: string
+          format: uri
+          example: https://cdn.floria.com/images/rose-bouquet.jpg
+
+        height:
+          type: integer
+          example: 20
+
+        stemsCount:
+          type: integer
+          example: 3
+
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColorDTo'
+
+        occasions:
+          type: array
+          items:
+            $ref: '#/components/schemas/OccasionDTo'
+
+        flowerTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowerTypesDTo'
+
+        bouquetTypeId:
+          type: integer
+          example: 1
+
+    ColorDTo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Pink
+
+    OccasionDTo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Wedding"
+
+    FlowerTypesDTo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 17
+        name:
+          type: string
+          example: "Rose"
+    PageInfo:
+      type: object
+      properties:
+        size:
+          type: integer
+          example: 10
+
+        number:
+          type: integer
+          example: 0
+
+        totalElements:
+          type: integer
+          format: int64
+          example: 1
+
+        totalPages:
+          type: integer
+          example: 1
+
+    ProductRecommendResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 6
+
+        name:
+          type: string
+          example: Powder Roses 21 Stems
+
+        imageUrl:
+          type: string
+          format: uri
+          example: https://flower-shop-floria.s3.eu-north-1.amazonaws.com/Powder+Roses+21+Stems.png
+
+        price:
+          type: number
+          format: decimal
+          example: 45.00
+
+        isNew:
+          type: boolean
+          example: true
+
+        isPopular:
+          type: boolean
+          example: true
+
+        isSeasonOffer:
+          type: boolean
+          example: true
+
+        discountPercent:
+          type: integer
+          example: 20
+
+        isRecommended:
+          type: boolean
+          example: true
+    ProductFilterOptionsResponse:
+      type: object
+      properties:
+        flowerTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+
+        bouquetTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BouquetTypeFilterOption'
+
+        occasions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+
+    FilterOption:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 17
+
+        name:
+          type: string
+          example: Rose
+
+    BouquetTypeFilterOption:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        name:
+          type: string
+          example: Monobouquet
+
+        packagingTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackagingTypeDto'
+
+    PackagingTypeDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        name:
+          type: string
+          example: Craft Paper Wrap
+
+        price:
+          type: number
+          format: decimal
+          example: 0.00
+
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 12
+
+        name:
+          type: string
+          example: Snowy Orchids 15 Stems
+
+        description:
+          type: string
+          example: Pure, airy, and effortlessly refined...
+
+        price:
+          type: number
+          format: decimal
+          example: 83.00
+
+        quantity:
+          type: integer
+          example: 10
+
+        stemsCount:
+          type: integer
+          example: 33
+
+        isAvailable:
+          type: boolean
+          example: true
+
+        height:
+          type: integer
+          example: 30
+
+        discountPercent:
+          type: integer
+          example: 20
+
+        isNew:
+          type: boolean
+          example: true
+
+        isPopular:
+          type: boolean
+          example: true
+
+        isSeasonOffer:
+          type: boolean
+          example: true
+
+        isRecommended:
+          type: boolean
+          example: true
+
+        createdAt:
+          type: string
+          format: date-time
+
+        flowerTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+
+        bouquetType:
+          $ref: '#/components/schemas/BouquetTypeFilterOption'
+
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImageDto'
+
+    ProductImageDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        imageUrl:
+          type: string
+          example: https://flower-shop-floria.s3.eu-north-1.amazonaws.com/Snowy+Orchids+15+Stems_Main.png"
+
+        productId:
+          type: integer
+          format: int64
+          example: 1
+        isMain:
+          type: boolean
+          example: true
