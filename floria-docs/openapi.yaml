@@ -54,7 +54,7 @@ paths:
                 $ref: '#/components/schemas/ProductResponse'
 
         '400':
-          description: invalid id parameter
+          description: invalid or empty id parameter
 
         '404':
           description: Product with the specified ID was not found
@@ -334,6 +334,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductFilterOptionsResponse'
+        '500':
+          description: Internal server error
+
+  /auth/register:
+    post:
+      tags:
+        - Auth service
+      summary: Register a new user
+      description: Creates a new user account and returns a JWT authentication token.
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        description: User registration information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              firstName: Anna
+              lastName: Smith
+              email: anna.smith@example.com
+              password: Password123
+              isMarketingAllow: true
+
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                token: eyJhbGciOiJIUzI1NiJ9.example.jwt.token
+
+        '400':
+          description: Validation error or invalid registration data
+        '409':
+          description: A user with this email already exists
+        '500':
+          description: Internal server error
+
+  /auth/login:
+    post:
+      tags:
+        - Auth service
+      summary: Log in to the application
+      description: |
+        Authenticates a user using an email and password.
+        Returns a JWT token and the user's role after successful authentication.
+        The endpoint is rate-limited. Too many unsuccessful login attempts
+        may result in a temporary block.
+        operationId: login
+      security: []
+
+      requestBody:
+        required: true
+        description: User login credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: anna.smith@example.com
+              password: Password123
+
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+              example:
+                success: true
+                data:
+                  jwtToken: eyJhbGciOiJIUzI1NiJ9.example.jwt.token
+                  role: USER
+
+        '400':
+          description: Invalid request data
+        '401':
+          description: Invalid email or password
+        '404':
+          description: User with the specified email was not found
+        '429':
+          description: Too many login attempts
         '500':
           description: Internal server error
 components:
@@ -752,3 +839,120 @@ components:
         isMain:
           type: boolean
           example: true
+
+    RegisterRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - isMarketingAllow
+      properties:
+
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+          description: User's first name. Must contain only letters, spaces, apostrophes, or hyphens.
+          example: Anna
+
+        lastName:
+          type: string
+          maxLength: 50
+          nullable: true
+          description: User's last name. May be empty.
+          example: Smith
+
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: anna.smith@example.com
+
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: |
+            User password. Must contain at least:
+            - 8 characters
+            - 1 uppercase letter
+            - 1 digit
+          example: Password123
+
+        isMarketingAllow:
+          type: boolean
+          description: Indicates whether the user allows marketing communications.
+          example: true
+
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+
+        email:
+          type: string
+          format: email
+          description: User's registered email address.
+          example: anna.smith@example.com
+
+        password:
+          type: string
+          format: password
+          description: User's password.
+          example: Password123
+
+
+    AuthResponse:
+      type: object
+      properties:
+
+        token:
+          type: string
+          description: JWT authentication token.
+          example: eyJhbGciOiJIUzI1NiJ9.example.jwt.token
+
+
+    LoginResponseDto:
+      type: object
+      properties:
+
+        token:
+          type: string
+          description: JWT authentication token.
+          example: eyJhbGciOiJIUzI1NiJ9.example.jwt.token
+
+        role:
+          type: string
+          description: Role assigned to the authenticated user.
+          example: USER
+
+
+    LoginSuccessResponse:
+      type: object
+      description: Successful login response wrapped in MyResponse.
+      properties:
+
+        success:
+          type: boolean
+          example: true
+
+        data:
+          $ref: '#/components/schemas/LoginResponseDto'
+
+
+    ErrorResponse:
+      type: object
+      properties:
+
+        success:
+          type: boolean
+          example: false
+
+        message:
+          type: string
+          example: Invalid email or password
