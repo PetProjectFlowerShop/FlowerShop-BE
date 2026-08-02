@@ -11,7 +11,8 @@ public enum APIErrorMessage {
     PRODUCT_IMAGE_NOT_FOUND_BY_ID("Not found product image by id : %s"),
     FLOWER_TYPE_NOT_FOUND_BY_ID("Not found flower type by id : %s"),
     COLOR_NOT_FOUND_BY_ID("Not found color  by id: %s"),
-    BOUQUET_TYPE_NOT_FOUND_BY_ID("Not found bouquet type by id: %s");
+    BOUQUET_TYPE_NOT_FOUND_BY_ID("Not found bouquet type by id: %s"),
+    IDS_REQUIRED_ERROR ("Parameter 'ids' must contain at least one valid ID");
     public final String message;
 
     public String getMessage(Object... args) {
