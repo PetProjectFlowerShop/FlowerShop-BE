@@ -17,6 +17,13 @@ import java.util.List;
 @Component
 @Slf4j
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/actuator") || path.equals("/");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
@@ -24,7 +31,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         String email = request.getHeader("X-User-Email");
         String role = request.getHeader("X-User-Role");
 
-        if (email != null && role != null) {
+        if (email != null && !email.isBlank() && role != null && !role.isBlank()) {
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
             UsernamePasswordAuthenticationToken auth =
@@ -32,9 +39,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-            log.info("User authenticated: email={}, authorities={}", email, authorities);
+            log.debug("User authenticated via headers: email={}, role={}", email, role);
         } else {
-            log.warn("Authentication headers are missing for request: {}", request.getRequestURI());
+            log.warn("Authentication headers are missing for protected request: {}", request.getRequestURI());
         }
         filterChain.doFilter(request, response);
     }
