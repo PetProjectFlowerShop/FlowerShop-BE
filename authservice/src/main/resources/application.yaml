@@ -31,6 +31,16 @@ app:
     secret: ${JWT_SECRET}
     expiration-time: ${EXPIRATION_TIME}
 
+  password:
+    recovery:
+      host: ${SERVICE_HOST}
+      path: ${PASS_RECOVERY_PATH}
+
+  mailing:
+    username: ${MAILING_USER}
+    password: ${MAILING_PASSWORD}
+    sender: ${MAILING_SENDER}
+
 server:
   port: ${AUTH_SERVICE_PORT}
 
