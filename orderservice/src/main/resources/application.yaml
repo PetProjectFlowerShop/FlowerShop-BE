@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: orderservice
+
+  datasource:
+    url : ${POSTGRES_URL}
+    username : ${POSTGRES_USER}
+    password : ${POSTGRES_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
