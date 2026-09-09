@@ -41,6 +41,9 @@ public class Order {
     @Column(name = "customer_name", nullable = false)
     private String customerName;
 
+    @Column(name = "customer_email", nullable = false)
+    private String customerEmail;
+
     @Column(name = "customer_phone", nullable = false)
     private String customerPhone;
 
@@ -82,6 +85,10 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
