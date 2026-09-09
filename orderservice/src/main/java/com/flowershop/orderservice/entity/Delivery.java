@@ -25,6 +25,7 @@ public class Delivery {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
+
     @OneToOne()
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
