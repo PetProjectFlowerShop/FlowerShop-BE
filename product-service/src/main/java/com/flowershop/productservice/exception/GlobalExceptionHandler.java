@@ -4,6 +4,7 @@ import com.flowershop.productservice.exceptions.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -56,6 +57,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error(message, Collections.emptyMap()));
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(error(ex.getMessage(), Collections.emptyMap()));
+    }
+
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
         AuthorizationDeniedException ex) {
@@ -71,8 +78,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException ex) {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
+        Map<String, Object> body = Map.of(
+            "timestamp", LocalDateTime.now(),
+            "status", HttpStatus.NOT_FOUND.value(),
+            "error", "Resource Not Found",
+            "message", "The requested path '" + ex.getResourcePath() + "' was not found on this server"
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
     @ExceptionHandler(Exception.class)

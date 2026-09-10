@@ -35,6 +35,8 @@ public class ProductResponse implements Serializable {
 
     private Set<FlowerTypeDto> flowerTypes;
     private Set<ColorDto> colors;
+    private Set<OccasionDto> occasions;
+
     private BouquetType bouquetType;
 
     private List<ProductImageResponse> images;
