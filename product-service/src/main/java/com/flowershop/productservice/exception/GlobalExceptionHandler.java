@@ -4,6 +4,7 @@ import com.flowershop.productservice.exceptions.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -54,6 +55,12 @@ public class GlobalExceptionHandler {
             ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown"
         );
         return ResponseEntity.badRequest().body(error(message, Collections.emptyMap()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(error(ex.getMessage(), Collections.emptyMap()));
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)

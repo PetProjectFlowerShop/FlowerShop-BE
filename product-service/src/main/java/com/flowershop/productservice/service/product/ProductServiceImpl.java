@@ -1,4 +1,4 @@
-package com.flowershop.productservice.service;
+package com.flowershop.productservice.service.product;
 
 import com.flowershop.productservice.constants.APIErrorMessage;
 import com.flowershop.productservice.dto.*;
@@ -9,13 +9,15 @@ import com.flowershop.productservice.mapper.ProductMapper;
 import com.flowershop.productservice.repository.BouquetTypeRepository;
 import com.flowershop.productservice.repository.ColorRepository;
 import com.flowershop.productservice.repository.FlowerTypeRepository;
+import com.flowershop.productservice.repository.OccasionRepository;
 import com.flowershop.productservice.repository.ProductRepository;
 import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,33 +29,28 @@ public class ProductServiceImpl implements ProductService {
     private final ColorRepository colorRepository;
     private final FlowerTypeRepository flowerTypeRepository;
     private final BouquetTypeRepository bouquetTypeRepository;
+    private final OccasionRepository occasionRepository;
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
 
     @Override
     public ProductResponse createProduct(ProductCreateRequest request) {
-        Set<Color> colors = request.getColorIds().stream()
-            .map(id -> colorRepository.findById(id).orElseThrow(() ->
-                new NotFoundException(APIErrorMessage.COLOR_NOT_FOUND_BY_ID.getMessage(id))))
-            .collect(Collectors.toSet());
+        Set<Color> colors = fetchColors(request.getColorIds());
+        Set<FlowerType> flowerTypes = fetchFlowerTypes(request.getFlowerTypeIds());
+        Set<Occasion> occasions = fetchOccasions(request.getOccasionIds());
+        BouquetType bouquetType = fetchBouquetType(request.getBouquetTypeId());
 
-        Set<FlowerType> flowerTypes = request.getFlowerTypeIds().stream()
-            .map(id -> flowerTypeRepository.findById(id).orElseThrow(() ->
-                new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(id))))
-            .collect(Collectors.toSet());
-
-        BouquetType bouquetType = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
-            new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(request.getBouquetTypeId())));
         Product product = productMapper.create(request);
         product.setBouquetType(bouquetType);
         product.setColors(colors);
         product.setFlowerTypes(flowerTypes);
+        product.setOccasions(occasions);
         product = productRepository.save(product);
+
         ProductResponse response = productMapper.convertProductToProductResponse(product);
         response.setColors(convertColorsToColorDtos(product.getColors()));
         response.setFlowerTypes(convertFlowerTypesToFlowerTypeDtos(product.getFlowerTypes()));
         return response;
-
     }
 
     @Override
@@ -73,40 +70,25 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateProduct(Long id, ProductUpdateRequest request) {
         Product product = productRepository.findById(id).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(id)));
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
-        product.setQuantity(request.getQuantity());
-        product.setStemsCount(request.getStemsCount());
-        product.setIsAvailable(request.getIsAvailable());
-        product.setHeight(request.getHeight());
-        product.setDiscountPercent(request.getDiscountPercent());
-        product.setIsNew(request.getIsNew());
-        product.setIsPopular(request.getIsPopular());
-        product.setIsSeasonOffer(request.getIsSeasonOffer());
-        product.setIsRecommended(request.getIsRecommended());
-        Set<Color> colors = request.getColorIds().stream()
-            .map(colorId -> colorRepository.findById(colorId).orElseThrow(() ->
-                new NotFoundException(APIErrorMessage.COLOR_NOT_FOUND_BY_ID.getMessage(colorId))))
-            .collect(Collectors.toSet());
-        Set<FlowerType> flowerTypes = request.getFlowerTypeIds().stream()
-            .map(flowerTypeId -> flowerTypeRepository.findById(flowerTypeId).orElseThrow(() ->
-                new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(flowerTypeId))))
-            .collect(Collectors.toSet());
-        product.setColors(colors);
-        product.setFlowerTypes(flowerTypes);
-        if (!Objects.equals(product.getBouquetType().getId(), request.getBouquetTypeId())) {
-            // Fix: Pass bouquetTypeId instead of product id to the exception message
-            BouquetType type = bouquetTypeRepository.findById(request.getBouquetTypeId()).orElseThrow(() ->
-                new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(id)));
-            product.setBouquetType(type);
+
+        productMapper.updateProductFromRequest(request, product);
+
+        if (request.getColorIds() != null) {
+            product.setColors(fetchColors(request.getColorIds()));
         }
-        ProductResponse response = productMapper.convertProductToProductResponse(product);
-        response.setColors(convertColorsToColorDtos(product.getColors()));
-        response.setFlowerTypes(convertFlowerTypesToFlowerTypeDtos(product.getFlowerTypes()));
-        response.setImages(product.getImages().stream()
-            .map(productImageMapper::convert).toList());
-        return response;
+        if (request.getFlowerTypeIds() != null) {
+            product.setFlowerTypes(fetchFlowerTypes(request.getFlowerTypeIds()));
+        }
+        if (request.getBouquetTypeId() != null) {
+            product.setBouquetType(fetchBouquetType(request.getBouquetTypeId()));
+        }
+        if (request.getOccasionIds() != null) {
+            product.setOccasions(fetchOccasions(request.getOccasionIds()));
+        }
+
+        product = productRepository.save(product);
+
+        return productMapper.convertProductToProductResponse(product);
     }
 
     @Transactional
@@ -121,15 +103,52 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
 
     }
-    private Set<ColorDto> convertColorsToColorDtos(Set<Color>colors){
+
+    private Set<ColorDto> convertColorsToColorDtos(Set<Color> colors) {
         return colors.stream()
-            .map(c->new ColorDto(c.getId(),c.getName()))
+            .map(c -> new ColorDto(c.getId(), c.getName()))
             .collect(Collectors.toSet());
 
     }
-    private Set<FlowerTypeDto>convertFlowerTypesToFlowerTypeDtos(Set<FlowerType>flowerTypes){
+
+    private Set<FlowerTypeDto> convertFlowerTypesToFlowerTypeDtos(Set<FlowerType> flowerTypes) {
         return flowerTypes.stream()
-            .map(f->new FlowerTypeDto(f.getId(),f.getName()))
+            .map(f -> new FlowerTypeDto(f.getId(), f.getName()))
             .collect(Collectors.toSet());
+    }
+
+    private Set<Color> fetchColors(Set<Long> colorIds) {
+        if (colorIds == null || colorIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return colorIds.stream()
+            .map(id -> colorRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(APIErrorMessage.COLOR_NOT_FOUND_BY_ID.getMessage(id))))
+            .collect(Collectors.toSet());
+    }
+
+    private Set<FlowerType> fetchFlowerTypes(Set<Long> flowerTypeIds) {
+        if (flowerTypeIds == null || flowerTypeIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return flowerTypeIds.stream()
+            .map(id -> flowerTypeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(APIErrorMessage.FLOWER_TYPE_NOT_FOUND_BY_ID.getMessage(id))))
+            .collect(Collectors.toSet());
+    }
+
+    private Set<Occasion> fetchOccasions(Set<Long> occasionIds) {
+        if (occasionIds == null || occasionIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return occasionIds.stream()
+            .map(id -> occasionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(APIErrorMessage.OCCASION_NOT_FOUND_BY_ID.getMessage(id))))
+            .collect(Collectors.toSet());
+    }
+
+    private BouquetType fetchBouquetType(Long bouquetTypeId) {
+        return bouquetTypeRepository.findById(bouquetTypeId)
+            .orElseThrow(() -> new NotFoundException(APIErrorMessage.BOUQUET_TYPE_NOT_FOUND_BY_ID.getMessage(bouquetTypeId)));
     }
 }
