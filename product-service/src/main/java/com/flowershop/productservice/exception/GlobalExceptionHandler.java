@@ -78,8 +78,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException ex) {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
+        Map<String, Object> body = Map.of(
+            "timestamp", LocalDateTime.now(),
+            "status", HttpStatus.NOT_FOUND.value(),
+            "error", "Resource Not Found",
+            "message", "The requested path '" + ex.getResourcePath() + "' was not found on this server"
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
     @ExceptionHandler(Exception.class)
