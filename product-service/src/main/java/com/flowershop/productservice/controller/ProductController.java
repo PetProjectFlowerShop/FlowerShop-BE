@@ -2,7 +2,7 @@ package com.flowershop.productservice.controller;
 import com.flowershop.productservice.dto.ProductCreateRequest;
 import com.flowershop.productservice.dto.ProductResponse;
 import com.flowershop.productservice.dto.ProductUpdateRequest;
-import com.flowershop.productservice.service.ProductService;
+import com.flowershop.productservice.service.product.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
