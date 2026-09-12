@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +31,8 @@ public class ProductResponse implements Serializable {
     private Boolean isPopular;
     private Boolean isSeasonOffer;
     private Boolean isRecommended;
-    private LocalDateTime createdAt;
+
+    private Instant createdAt;
 
     private Set<FlowerTypeDto> flowerTypes;
     private Set<ColorDto> colors;

@@ -5,7 +5,9 @@ import com.flowershop.productservice.dto.ProductUpdateRequest;
 import com.flowershop.productservice.service.product.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,10 +18,11 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> createProduct(
         @RequestBody @Valid ProductCreateRequest request) {
 
-        return ResponseEntity.ok(productService.createProduct(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
     }
 
     @GetMapping("/{id}")
@@ -29,6 +32,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> updateProduct(
         @PathVariable Long id,
         @RequestBody @Valid ProductUpdateRequest request) {
@@ -37,6 +41,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
 
         productService.deleteProduct(id);
