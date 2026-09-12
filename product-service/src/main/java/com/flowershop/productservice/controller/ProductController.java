@@ -5,6 +5,7 @@ import com.flowershop.productservice.dto.ProductUpdateRequest;
 import com.flowershop.productservice.service.product.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class ProductController {
     public ResponseEntity<ProductResponse> createProduct(
         @RequestBody @Valid ProductCreateRequest request) {
 
-        return ResponseEntity.ok(productService.createProduct(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
     }
 
     @GetMapping("/{id}")

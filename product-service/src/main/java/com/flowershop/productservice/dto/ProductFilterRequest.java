@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -35,8 +34,10 @@ public class ProductFilterRequest {
     @Min(value = 0, message = "maxHeight must be >= 0")
     private Integer maxHeight;
     @Min(value = 0, message = "min numberOfStems must be >= 0")
+    @Max(value = 10000, message = "min numberOfStems must be <= 10000")
     private Integer minNumberOfStems;
     @Min(value = 0, message = "maxNumberOfStems must be >= 0")
+    @Max(value = 10000, message = "maxNumberOfStems must be <= 10000")
     private Integer maxNumberOfStems;
 
     private Set<Long> flowerTypeId;
