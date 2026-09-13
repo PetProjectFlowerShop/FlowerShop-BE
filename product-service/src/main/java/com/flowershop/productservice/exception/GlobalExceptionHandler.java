@@ -4,14 +4,16 @@ import com.flowershop.productservice.exceptions.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.web.firewall.RequestRejectedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +22,8 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    //400 BadRequest
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -56,6 +60,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error(message, Collections.emptyMap()));
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(error(ex.getMessage(), Collections.emptyMap()));
+    }
+
+    @ExceptionHandler(RequestRejectedException.class)
+    public ResponseEntity<ErrorResponse> handleRequestRejected(RequestRejectedException ex) {
+        Map<String, String> details = new HashMap<>();
+        details.put("rejectedRequest", ex.getMessage());
+        return ResponseEntity.badRequest().body(error("Invalid request parameters", details));
+    }
+
+    //401 Unauthorized
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
         AuthorizationDeniedException ex) {
@@ -64,6 +82,7 @@ public class GlobalExceptionHandler {
             .body(error("Access denied", Collections.emptyMap()));
     }
 
+    //404 Not Found
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -71,10 +90,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException ex) {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
+        Map<String, Object> body = Map.of(
+            "status", HttpStatus.NOT_FOUND.value(),
+            "error", "Resource Not Found",
+            "message", "The requested path '" + ex.getResourcePath() + "' was not found on this server",
+            "timestamp", LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    // 405 Method Not Allowed
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        Map<String, String> details = new HashMap<>();
+        details.put("method", ex.getMethod());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+            .body(error(ex.getMessage(), details));
+    }
+
+    //500 Internal Server Error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
         log.error("Internal server error caught: ", ex);

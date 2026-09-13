@@ -6,6 +6,12 @@ spring:
     url: ${POSTGRES_URL}
     username: ${PRODUCT_DB_USER}
     password: ${PRODUCT_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      idle-timeout: 300000 # 5 minutes
+      max-lifetime: 1200000 # 20 minutes
+      connection-timeout: 20000 # 20 seconds
 
   data:
     redis:

@@ -1,4 +1,4 @@
-package com.flowershop.productservice.service;
+package com.flowershop.productservice.service.product;
 
 import com.flowershop.productservice.dto.ProductCreateRequest;
 import com.flowershop.productservice.dto.ProductResponse;

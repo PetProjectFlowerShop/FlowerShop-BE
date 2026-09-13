@@ -1,8 +1,7 @@
 package com.flowershop.productservice.controller;
 
-import com.flowershop.productservice.dto.ProductImageResponse;
 import com.flowershop.productservice.dto.ProductResponse;
-import com.flowershop.productservice.service.ProductService;
+import com.flowershop.productservice.service.product.ProductService;
 import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor

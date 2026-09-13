@@ -1,0 +1,4 @@
+ALTER TABLE orders
+    ADD COLUMN payment_method VARCHAR(50) NOT NULL DEFAULT 'CARD';
+ALTER TABLE orders
+    ALTER COLUMN payment_method DROP DEFAULT;

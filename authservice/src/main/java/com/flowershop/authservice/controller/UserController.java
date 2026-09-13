@@ -4,6 +4,7 @@ import com.flowershop.authservice.dto.LoginRequest;
 import com.flowershop.authservice.dto.LoginResponseDto;
 import com.flowershop.authservice.dto.MyResponse;
 import com.flowershop.authservice.exceptions.BadCredentialsException;
+import com.flowershop.authservice.exceptions.NotFoundException;
 import com.flowershop.authservice.service.RateLimitingService;
 import com.flowershop.authservice.dto.PasswordRecoveryRequest;
 import com.flowershop.authservice.dto.PasswordResetDto;
@@ -33,20 +34,27 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<MyResponse<?>> login(@RequestBody LoginRequest request) {
-        if (rateLimitingService.isBlocked(request.getEmail())) {
-            MyResponse<Void> myResponse = MyResponse.creteError("Too many attempts");
+    public ResponseEntity<MyResponse<?>> login(@Valid @RequestBody LoginRequest request) {
+        String email = request.getEmail();
+
+        if (email != null && rateLimitingService.isBlocked(email)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(myResponse);
+                .body(MyResponse.creteError("Too many attempts"));
         }
+
         try {
             LoginResponseDto loginResponseDto = userService.login(request);
-            MyResponse<LoginResponseDto> myResponse = MyResponse.createSuccess(loginResponseDto);
-            rateLimitingService.resetAttempts(request.getEmail());
-            return ResponseEntity.ok(myResponse);
-        } catch (BadCredentialsException e) {
-            rateLimitingService.recordFailedAttempts(request.getEmail());
-            throw e;
+
+            if (email != null) {
+                rateLimitingService.resetAttempts(email);
+            }
+            return ResponseEntity.ok(MyResponse.createSuccess(loginResponseDto));
+
+        } catch (BadCredentialsException | NotFoundException e) {
+            if (email != null) {
+                rateLimitingService.recordFailedAttempts(email);
+            }
+            throw new BadCredentialsException("Invalid email or password");
         }
     }
 
