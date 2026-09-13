@@ -16,7 +16,9 @@ public class ProductRecommendResponse {
     private Long id;
     private String name;
     private String imageUrl;
+    private Long bouquetTypeId;
     private BigDecimal price;
+    private Integer quantity;
     private Boolean isNew;
     private Boolean isPopular;
     private Boolean isSeasonOffer;
