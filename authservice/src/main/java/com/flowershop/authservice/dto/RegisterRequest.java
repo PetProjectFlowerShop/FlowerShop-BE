@@ -15,16 +15,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank(message = "First name is required")
-    @Pattern(regexp = "^[A-Za-zА-Яа-яЁёЇїІіЄєҐґ'\\-\\s]{2,50}$",
-        message = "First name must be 2-50 characters long and contain only letters")
-    private String firstName;
-
-    @NotNull
-    @Pattern(regexp = "^$|^[A-Za-zА-Яа-яЁёЇїІіЄєҐґ'\\-\\s]{0,50}$",
-        message = "Last name must be empty or 0-50 characters long and contain only letters")
-    private String lastName;
-
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
