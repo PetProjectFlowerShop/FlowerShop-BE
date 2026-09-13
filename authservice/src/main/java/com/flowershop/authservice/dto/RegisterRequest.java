@@ -22,7 +22,7 @@ public class RegisterRequest {
 
     @NotNull
     @Pattern(regexp = "^$|^[A-Za-zА-Яа-яЁёЇїІіЄєҐґ'\\-\\s]{0,50}$",
-        message = "Last name must be empty or 2-50 characters long and contain only letters")
+        message = "Last name must be empty or 0-50 characters long and contain only letters")
     private String lastName;
 
     @NotBlank(message = "Email is required")
