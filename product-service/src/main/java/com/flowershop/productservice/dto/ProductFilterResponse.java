@@ -19,6 +19,8 @@ public class ProductFilterResponse {
     private String imageUrl;
     private Integer height;
     private Integer stemsCount;
+    private Integer discountPercent;
+    private Integer quantity;
     private Set<ColorDto> colors;
     private Set<OccasionDto> occasions;
     private Set<FlowerTypeDto> flowerTypes;

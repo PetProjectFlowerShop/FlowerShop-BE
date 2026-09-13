@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    //400
+    //400 BadRequest
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -73,15 +73,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error("Invalid request parameters", details));
     }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        Map<String, String> details = new HashMap<>();
-        details.put("method", ex.getMethod());
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-            .body(error(ex.getMessage(), details));
-    }
-
-    //401
+    //401 Unauthorized
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
         AuthorizationDeniedException ex) {
@@ -90,7 +82,7 @@ public class GlobalExceptionHandler {
             .body(error("Access denied", Collections.emptyMap()));
     }
 
-    //404
+    //404 Not Found
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -100,14 +92,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         Map<String, Object> body = Map.of(
-            "timestamp", LocalDateTime.now(),
             "status", HttpStatus.NOT_FOUND.value(),
             "error", "Resource Not Found",
-            "message", "The requested path '" + ex.getResourcePath() + "' was not found on this server"
+            "message", "The requested path '" + ex.getResourcePath() + "' was not found on this server",
+            "timestamp", LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
-    //500
+
+    // 405 Method Not Allowed
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        Map<String, String> details = new HashMap<>();
+        details.put("method", ex.getMethod());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+            .body(error(ex.getMessage(), details));
+    }
+
+    //500 Internal Server Error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
         log.error("Internal server error caught: ", ex);

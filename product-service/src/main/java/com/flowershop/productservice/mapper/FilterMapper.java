@@ -55,6 +55,8 @@ public class FilterMapper {
             .isSeasonOffer(product.getIsSeasonOffer())
             .imageUrl(imageUrl.orElse(""))
             .height(product.getHeight())
+            .discountPercent(product.getDiscountPercent())
+            .quantity(product.getQuantity())
             .stemsCount(product.getStemsCount())
             .colors(product.getColors().stream().map(this::mapToColorDto).collect(Collectors.toSet()))
             .occasions(product.getOccasions().stream().map(this::mapToOccasionDto).collect(Collectors.toSet()))
