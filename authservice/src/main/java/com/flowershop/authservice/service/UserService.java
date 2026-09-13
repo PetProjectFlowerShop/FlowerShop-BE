@@ -59,6 +59,7 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException(ApiErrorMessage.INVALID_PASSWORD.getMessage(request.getEmail()));
         }
+
         String jwtToken = jwtUtils.generateToken(request.getEmail(), user.getRole().name());
         return new LoginResponseDto(jwtToken, user.getRole().name());
 
