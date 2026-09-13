@@ -19,6 +19,8 @@ public class ProductRecommendMapper {
                 .map(ProductImage::getImageUrl)
                 .findFirst().orElse(""))
             .price(product.getPrice())
+            .bouquetTypeId(product.getBouquetType().getId())
+            .quantity(product.getQuantity())
             .isSeasonOffer(product.getIsSeasonOffer())
             .discountPercent(product.getDiscountPercent())
             .isPopular(product.getIsPopular())
