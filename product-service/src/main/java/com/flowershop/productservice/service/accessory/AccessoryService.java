@@ -12,7 +12,7 @@ import java.util.List;
 public class AccessoryService {
     private final AccessoryRepository accessoryRepository;
 
-    @Cacheable(value = "allAccessories")
+    @Cacheable(value = "getAllAccessories")
     public List<Accessory> getAllAccessories() {
         return accessoryRepository.findAll();
     }
