@@ -34,6 +34,9 @@ public class Order {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "accessory_id")
+    private Long accessoryId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
