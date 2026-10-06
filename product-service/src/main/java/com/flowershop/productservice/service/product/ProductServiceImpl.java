@@ -3,7 +3,7 @@ package com.flowershop.productservice.service.product;
 import com.flowershop.productservice.constants.APIErrorMessage;
 import com.flowershop.productservice.dto.*;
 import com.flowershop.productservice.entity.*;
-import com.flowershop.productservice.exceptions.NotFoundException;
+import com.flowershop.productservice.exception.exceptions.NotFoundException;
 import com.flowershop.productservice.mapper.ProductImageMapper;
 import com.flowershop.productservice.mapper.ProductMapper;
 import com.flowershop.productservice.repository.BouquetTypeRepository;
