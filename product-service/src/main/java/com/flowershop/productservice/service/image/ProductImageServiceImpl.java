@@ -24,33 +24,36 @@ public class ProductImageServiceImpl implements ProductImageService {
     private final FileStorageService fileStorageService;
     private final ProductImageMapper productImageMapper;
 
+    @Transactional()
     @Override
     public List<ProductImageResponse> addImages(Long productId, MultipartFile[] files) throws IOException {
-        List<ProductImageResponse> productImageResponses = new ArrayList<>();
         Product product = productRepository.findById(productId).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(productId)));
+
+        List<ProductImage> newImages = new ArrayList<>();
         for (MultipartFile file : files) {
             String url = fileStorageService.uploadFile(file);
             ProductImage productImage = new ProductImage();
             productImage.setProduct(product);
             productImage.setImageUrl(url);
-            productImage = productImageRepository.save(productImage);
-            ProductImageResponse response = productImageMapper.convert(productImage);
-            productImageResponses.add(response);
-        }
-        return productImageResponses;
-    }
 
+            newImages.add(productImage);
+        }
+        List<ProductImage> savedImages = productImageRepository.saveAll(newImages);
+        return savedImages.stream()
+            .map(productImageMapper::convert)
+            .toList();
+    }
+    @Transactional()
     @Override
     public void deleteImage(Long imageId) {
         ProductImage productImage = productImageRepository.findById(imageId).orElseThrow(() ->
             new NotFoundException(APIErrorMessage.PRODUCT_IMAGE_NOT_FOUND_BY_ID.getMessage(imageId)));
-        fileStorageService.deleteFile(productImage.getImageUrl());
         productImageRepository.delete(productImage);
-
+        fileStorageService.deleteFile(productImage.getImageUrl());
     }
 
-    @Transactional
+    @Transactional()
     @Override
     public ProductImageResponse setMainImage(Long productId, Long imageId) {
         ProductImage newProductImage = productImageRepository.findById(imageId)
