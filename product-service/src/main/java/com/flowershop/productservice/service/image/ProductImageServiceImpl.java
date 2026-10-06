@@ -4,7 +4,7 @@ import com.flowershop.productservice.constants.APIErrorMessage;
 import com.flowershop.productservice.dto.ProductImageResponse;
 import com.flowershop.productservice.entity.Product;
 import com.flowershop.productservice.entity.ProductImage;
-import com.flowershop.productservice.exceptions.NotFoundException;
+import com.flowershop.productservice.exception.exceptions.NotFoundException;
 import com.flowershop.productservice.mapper.ProductImageMapper;
 import com.flowershop.productservice.repository.ProductImageRepository;
 import com.flowershop.productservice.repository.ProductRepository;
@@ -49,6 +49,7 @@ public class ProductImageServiceImpl implements ProductImageService {
             new NotFoundException(APIErrorMessage.PRODUCT_IMAGE_NOT_FOUND_BY_ID.getMessage(imageId)));
         fileStorageService.deleteFile(productImage.getImageUrl());
         productImageRepository.delete(productImage);
+
     }
 @Transactional
     @Override
