@@ -12,11 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,30 +49,31 @@ public class ProductImageServiceImpl implements ProductImageService {
         productImageRepository.delete(productImage);
 
     }
-@Transactional
+
+    @Transactional
     @Override
-    public void setMainImage(Long productId, Long imageId) {
-        Optional<ProductImage> oldProductImageOptional = productImageRepository.findByProductIdAndIsMainTrue(productId);
-        if (oldProductImageOptional.isPresent()) {
-            ProductImage productImage = oldProductImageOptional.get();
-            productImage.setIsMain(false);
-        }
-        ProductImage productImage = productImageRepository.findById(imageId)
+    public ProductImageResponse setMainImage(Long productId, Long imageId) {
+        ProductImage newProductImage = productImageRepository.findById(imageId)
             .orElseThrow(() -> new NotFoundException(APIErrorMessage.PRODUCT_IMAGE_NOT_FOUND_BY_ID.getMessage(productId)));
-        if (productImage.getProduct().getId().equals(productId)){
-            productImage.setIsMain(true);
 
+        if (!newProductImage.getProduct().getId().equals(productId)) {
+             throw new IllegalArgumentException(APIErrorMessage.IMAGE_NOT_BELONG_TO_PRODUCT.getMessage(imageId, productId));
+        }
+        if(Boolean.TRUE.equals(newProductImage.getIsMain())){
+            return productImageMapper.convert(newProductImage);
         }
 
+        productImageRepository.findByProductIdAndIsMainTrue(productId)
+            .ifPresent(pi -> pi.setIsMain(false));
+        //Dirty Checking
+        newProductImage.setIsMain(true);
+
+        return productImageMapper.convert(newProductImage);
     }
 
     @Override
     public List<ProductImageResponse> getProductImages(Long productId) {
-        return productImageRepository.findAllByProductId(productId).stream().map(productImage -> {
-            ProductImageResponse response = productImageMapper.convert(productImage);
-            return response;
-
-        }).toList();
+        return productImageRepository.findAllByProductId(productId).stream().map(productImageMapper::convert).toList();
 
     }
 }

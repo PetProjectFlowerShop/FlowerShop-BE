@@ -41,10 +41,9 @@ public class ProductImageController {
 
     @PatchMapping("/{productId}/images/{imageId}/main")
     @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setMainImage(@PathVariable("productId") Long productId,
+    public ProductImageResponse setMainImage(@PathVariable("productId") Long productId,
                              @PathVariable("imageId") Long imageId) {
-        productImageService.setMainImage(productId, imageId);
+       return productImageService.setMainImage(productId, imageId);
     }
 
 }
