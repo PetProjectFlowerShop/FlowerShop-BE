@@ -33,7 +33,7 @@ public interface ProductImageService {
      * @param productId the unique identifier of the product.
      * @param imageId   the unique identifier of the image to be set as main.
      */
-    void setMainImage(Long productId, Long imageId);
+    ProductImageResponse setMainImage(Long productId, Long imageId);
 
     /**
      * Retrieves all images associated with a specific product.

@@ -9,11 +9,13 @@ import lombok.Getter;
 public enum APIErrorMessage {
     PRODUCT_NOT_FOUND_BY_ID("Not found product by id : %s"),
     PRODUCT_IMAGE_NOT_FOUND_BY_ID("Not found product image by id : %s"),
+    IMAGE_NOT_BELONG_TO_PRODUCT("Image with id : %s does not belong to product with id : %s"),
     FLOWER_TYPE_NOT_FOUND_BY_ID("Not found flower type by id : %s"),
     COLOR_NOT_FOUND_BY_ID("Not found color  by id: %s"),
     BOUQUET_TYPE_NOT_FOUND_BY_ID("Not found bouquet type by id: %s"),
     OCCASION_NOT_FOUND_BY_ID("Not found occasion by id: %s"),
     IDS_REQUIRED_ERROR ("Parameter 'ids' must contain at least one valid ID");
+
     public final String message;
 
     public String getMessage(Object... args) {
