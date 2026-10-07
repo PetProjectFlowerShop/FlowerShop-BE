@@ -1,6 +1,6 @@
 package com.flowershop.productservice.exception;
 
-import com.flowershop.productservice.exceptions.NotFoundException;
+import com.flowershop.productservice.exception.exceptions.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +13,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -71,6 +73,16 @@ public class GlobalExceptionHandler {
         Map<String, String> details = new HashMap<>();
         details.put("rejectedRequest", ex.getMessage());
         return ResponseEntity.badRequest().body(error("Invalid request parameters", details));
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ErrorResponse> handleMultipartException(MultipartException ex) {
+        return ResponseEntity.badRequest().body(error(ex.getMessage(), Collections.emptyMap()));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingServletRequestPartException(MissingServletRequestPartException ex) {
+        return ResponseEntity.badRequest().body(error(ex.getMessage(), Collections.emptyMap()));
     }
 
     //401 Unauthorized
