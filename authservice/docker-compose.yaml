@@ -1,0 +1,32 @@
+services:
+  postgres-auth:
+    image: postgres:17-alpine
+    container_name: postgres-auth
+    restart: unless-stopped
+    ports:
+      - "${AUTH_DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER:-user}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASS:-pass}
+      POSTGRES_DB: ${AUTH_DB_NAME:-auth}
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis-auth:
+    image: redis:7-alpine
+    container_name: redis-auth
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_auth_data:
