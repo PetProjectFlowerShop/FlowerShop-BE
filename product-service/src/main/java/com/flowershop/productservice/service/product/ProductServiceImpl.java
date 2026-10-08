@@ -15,9 +15,7 @@ import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -94,14 +92,11 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() ->
-            new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(id)));
-        List<ProductImageResponse> images = productImageService.getProductImages(id);
-        for (ProductImageResponse image : images) {
-            productImageService.deleteImage(image.getId());
+        if (!productRepository.existsById(id)) {
+            throw new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(id));
         }
-        productRepository.delete(product);
-
+        productImageService.deleteAllProductImages(id);
+        productRepository.deleteById(id);
     }
 
     private Set<ColorDto> convertColorsToColorDtos(Set<Color> colors) {
