@@ -6,7 +6,7 @@ Backend for an online flower shop built with **Java** and **Spring Boot** using 
 
 Swagger documentation:
 
-👉 https://app.swaggerhub.com/apis-docs/floria-466/Floria/1.0.0?view=uiDocs
+👉 https://flowershop-ruby.vercel.app
 
 ```mermaid
 graph TD
