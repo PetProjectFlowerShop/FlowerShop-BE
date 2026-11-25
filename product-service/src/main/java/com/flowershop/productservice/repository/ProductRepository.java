@@ -1,7 +1,6 @@
 package com.flowershop.productservice.repository;
 
 import com.flowershop.productservice.entity.Product;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,5 +32,4 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @EntityGraph(attributePaths = {"images", "colors", "occasions", "flowerTypes"})
     List<Product> findAllByIdIn(Collection<Long> ids);
 
-    boolean existsById(@NonNull Long id);
 }

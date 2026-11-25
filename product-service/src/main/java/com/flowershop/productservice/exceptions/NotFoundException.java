@@ -1,4 +1,4 @@
-package com.flowershop.productservice.exception.exceptions;
+package com.flowershop.productservice.exceptions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

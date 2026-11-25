@@ -9,10 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.time.LocalDate;
 
 @Entity
@@ -20,6 +18,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Setter
 @Getter
+@Builder
 @Table(name = "deliveries")
 public class Delivery {
     @Id
@@ -46,6 +45,6 @@ public class Delivery {
     private LocalDate deliveryDate;
     @Column(name = "delivery_time_slot", nullable = false)
     private String deliveryTimeSlot;
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "delivery_comment")
     private String deliveryComment;
 }

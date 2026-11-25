@@ -1,11 +1,11 @@
 package com.flowershop.productservice.controller;
 
+import com.flowershop.productservice.dto.orderservice.AccessoryItemRequest;
+import com.flowershop.productservice.dto.orderservice.AccessoryItemResponse;
 import com.flowershop.productservice.entity.Accessory;
 import com.flowershop.productservice.service.accessory.AccessoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,5 +18,10 @@ public class AccessoryController {
     @GetMapping
     public List<Accessory> getAllAccessories() {
         return accessoryService.getAllAccessories();
+    }
+
+    @PostMapping("/get-price")
+    public List<AccessoryItemResponse> getAccessoriesPrices(@RequestBody List<AccessoryItemRequest> request) {
+        return accessoryService.getAccessoriesPrices(request);
     }
 }

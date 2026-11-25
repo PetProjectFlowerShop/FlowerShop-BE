@@ -1,4 +1,4 @@
 package com.flowershop.orderservice.dto;
 
-public class OrderResponseDto {
+public class OrderBouquetResponse {
 }

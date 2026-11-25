@@ -3,7 +3,8 @@ package com.flowershop.productservice.service.product;
 import com.flowershop.productservice.constants.APIErrorMessage;
 import com.flowershop.productservice.dto.*;
 import com.flowershop.productservice.entity.*;
-import com.flowershop.productservice.exception.exceptions.NotFoundException;
+import com.flowershop.productservice.exceptions.InsufficientStockException;
+import com.flowershop.productservice.exceptions.NotFoundException;
 import com.flowershop.productservice.mapper.ProductImageMapper;
 import com.flowershop.productservice.mapper.ProductMapper;
 import com.flowershop.productservice.repository.BouquetTypeRepository;
@@ -15,7 +16,9 @@ import com.flowershop.productservice.service.image.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -92,11 +95,29 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(id));
+        Product product = productRepository.findById(id).orElseThrow(() ->
+            new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(id)));
+        List<ProductImageResponse> images = productImageService.getProductImages(id);
+        for (ProductImageResponse image : images) {
+            productImageService.deleteImage(image.getId());
         }
-        productImageService.deleteAllProductImages(id);
-        productRepository.deleteById(id);
+        productRepository.delete(product);
+
+    }
+
+    public Product getProductByIdForOrderService (Long id) {
+        return productRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(APIErrorMessage.PRODUCT_NOT_FOUND_BY_ID.getMessage(id)));
+    }
+
+    public void updateProductQuantity(Product product, int quantity) {
+        int currentQuantity = product.getQuantity() - quantity;
+        if (currentQuantity < 0) {
+            throw new InsufficientStockException(String.format("Insufficient stock for product ID %d. Requested: %d, available: %d.",
+                product.getId(), quantity, product.getQuantity()));
+        }
+        product.setQuantity(currentQuantity);
+        productRepository.save(product);
     }
 
     private Set<ColorDto> convertColorsToColorDtos(Set<Color> colors) {

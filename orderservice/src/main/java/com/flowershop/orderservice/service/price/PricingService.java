@@ -1,7 +1,8 @@
 package com.flowershop.orderservice.service.price;
 
 import com.flowershop.orderservice.dto.DeliveryDto;
-import com.flowershop.orderservice.dto.OrderItemDto;
+import com.flowershop.orderservice.dto.BouquetItemResp;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface PricingService {
      * @param items list of ordered products and their quantities
      * @return subtotal amount
      */
-    BigDecimal calculateSubtotal(List<OrderItemDto> items);
+    BigDecimal calculateSubtotal(List<BouquetItemResp> items);
 
     /**
      * Calculates delivery cost based on shipping type and address.
@@ -21,4 +22,6 @@ public interface PricingService {
      * @return shipping fee amount
      */
     BigDecimal calculateShippingFee(DeliveryDto delivery);
+
+    BigDecimal calculateTotalAmount (BigDecimal subtotal, BigDecimal shipping, BigDecimal discount);
 }

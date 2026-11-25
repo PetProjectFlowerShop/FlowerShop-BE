@@ -21,6 +21,8 @@ public class SecurityConfig {
             .cors(AbstractHttpConfigurer::disable)
             .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, "/flowers/get-product-price").permitAll()
+                .requestMatchers(HttpMethod.POST, "/flowers/accessories/get-price").permitAll()
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 .anyRequest().authenticated()
             )

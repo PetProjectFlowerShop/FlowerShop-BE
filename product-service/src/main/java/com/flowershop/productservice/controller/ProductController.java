@@ -2,6 +2,9 @@ package com.flowershop.productservice.controller;
 import com.flowershop.productservice.dto.ProductCreateRequest;
 import com.flowershop.productservice.dto.ProductResponse;
 import com.flowershop.productservice.dto.ProductUpdateRequest;
+import com.flowershop.productservice.dto.orderservice.BouquetItemRequest;
+import com.flowershop.productservice.dto.orderservice.BouquetItemResp;
+import com.flowershop.productservice.service.product.ProductInventoryService;
 import com.flowershop.productservice.service.product.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +13,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/flowers")
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductInventoryService productInventoryService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -46,5 +52,10 @@ public class ProductController {
 
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/get-product-price")
+    public List<BouquetItemResp> getBouquetsPrices(@RequestBody List<BouquetItemRequest> items) {
+        return productInventoryService.getProductsPrices(items);
     }
 }

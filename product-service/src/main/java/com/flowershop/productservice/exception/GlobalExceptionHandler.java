@@ -1,6 +1,8 @@
 package com.flowershop.productservice.exception;
 
-import com.flowershop.productservice.exception.exceptions.NotFoundException;
+import com.flowershop.productservice.exceptions.InsufficientStockException;
+import com.flowershop.productservice.exceptions.NotFoundException;
+import com.flowershop.productservice.exceptions.WrappingNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.multipart.MultipartException;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -75,16 +75,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error("Invalid request parameters", details));
     }
 
-    @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<ErrorResponse> handleMultipartException(MultipartException ex) {
-        return ResponseEntity.badRequest().body(error(ex.getMessage(), Collections.emptyMap()));
-    }
-
-    @ExceptionHandler(MissingServletRequestPartException.class)
-    public ResponseEntity<ErrorResponse> handleMissingServletRequestPartException(MissingServletRequestPartException ex) {
-        return ResponseEntity.badRequest().body(error(ex.getMessage(), Collections.emptyMap()));
-    }
-
     //401 Unauthorized
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
@@ -98,6 +88,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(error(ex.getMessage(), Collections.emptyMap()));
+    }
+
+    @ExceptionHandler(WrappingNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWrappingNotFoundException(WrappingNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(error(ex.getMessage(), Collections.emptyMap()));
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleWrappingNotFoundException(InsufficientStockException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(error(ex.getMessage(), Collections.emptyMap()));
     }
 
@@ -128,6 +130,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
             error("Internal server error", Collections.emptyMap()));
     }
+
 
     private ErrorResponse error(String message, Map<String, String> details) {
         return new ErrorResponse(message, details, LocalDateTime.now());

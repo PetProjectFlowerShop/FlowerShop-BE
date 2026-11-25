@@ -11,3 +11,7 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL}
