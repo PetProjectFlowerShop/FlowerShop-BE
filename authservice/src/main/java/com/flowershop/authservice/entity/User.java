@@ -1,16 +1,12 @@
 package com.flowershop.authservice.entity;
 
-import com.flowershop.authservice.entity.emums.AuthProvider;
-import com.flowershop.authservice.entity.emums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.*;
-
-import java.time.LocalDateTime;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -26,14 +22,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "firstname", nullable = false, length = 100)
-    private String firstname;
-
-    @Column(name = "lastname", length = 100)
-    private String lastname;
+    @Column(name = "full_name",  length = 200)
+    private String fullName;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
+
+    @Column(name = "phone_number", length = 30)
+    private String phoneNumber;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
 
     @Column(name = "password", length = 128)
     private String password;
