@@ -1,4 +1,4 @@
-package com.flowershop.authservice.dto;
+package com.flowershop.authservice.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

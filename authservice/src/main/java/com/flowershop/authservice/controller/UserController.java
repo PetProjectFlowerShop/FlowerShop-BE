@@ -1,77 +1,33 @@
 package com.flowershop.authservice.controller;
 
-import com.flowershop.authservice.dto.LoginRequest;
-import com.flowershop.authservice.dto.LoginResponseDto;
-import com.flowershop.authservice.dto.MyResponse;
-import com.flowershop.authservice.exceptions.BadCredentialsException;
-import com.flowershop.authservice.exceptions.NotFoundException;
-import com.flowershop.authservice.service.RateLimitingService;
-import com.flowershop.authservice.dto.PasswordRecoveryRequest;
-import com.flowershop.authservice.dto.PasswordResetDto;
-import com.flowershop.authservice.dto.RegisterRequest;
-import com.flowershop.authservice.dto.AuthResponse;
-import com.flowershop.authservice.dto.GoogleLoginRequest;
-import com.flowershop.authservice.service.PasswordRecoveryService;
-import com.flowershop.authservice.service.UserService;
+import com.flowershop.authservice.dto.user.UserRequest;
+import com.flowershop.authservice.dto.user.UserResponseDto;
+import com.flowershop.authservice.service.user.UserProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    private final RateLimitingService rateLimitingService;
-    private final PasswordRecoveryService passwordRecoveryService;
 
-    @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
-        return userService.register(registerRequest);
+    private final UserProfileService userProfileService;
+
+    @GetMapping("/me")
+    public UserResponseDto getUserById(@AuthenticationPrincipal String username) {
+        return userProfileService.getUserProfile(username);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<MyResponse<?>> login(@Valid @RequestBody LoginRequest request) {
-        String email = request.getEmail();
-
-        if (email != null && rateLimitingService.isBlocked(email)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(MyResponse.creteError("Too many attempts"));
-        }
-
-        try {
-            LoginResponseDto loginResponseDto = userService.login(request);
-
-            if (email != null) {
-                rateLimitingService.resetAttempts(email);
-            }
-            return ResponseEntity.ok(MyResponse.createSuccess(loginResponseDto));
-
-        } catch (BadCredentialsException | NotFoundException e) {
-            if (email != null) {
-                rateLimitingService.recordFailedAttempts(email);
-            }
-            throw new BadCredentialsException("Invalid email or password");
-        }
-    }
-
-    @PostMapping("/google")
-    public ResponseEntity<AuthResponse> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
-        return ResponseEntity.ok(userService.loginOrRegisterWithGoogle(request.credential()));
-    }
-
-    @PostMapping("/password-recovery/request")
-    @ResponseStatus(HttpStatus.OK)
-    public void requestPasswordRecovery(@Valid @RequestBody PasswordRecoveryRequest request) {
-        passwordRecoveryService.requestPasswordRecovery(request.email());
-    }
-
-    @PostMapping("/password-recovery/confirm")
-    @ResponseStatus(HttpStatus.OK)
-    public void confirmPasswordRecovery(@RequestParam String token, @RequestBody @Valid PasswordResetDto passwordResetDto){
-        passwordRecoveryService.confirmPassword(token, passwordResetDto);
+    @PatchMapping("/me")
+    public UserResponseDto updateUserProfile(
+        @AuthenticationPrincipal String username,
+        @Valid @RequestBody UserRequest request) {
+        return userProfileService.updateUserProfile(username, request);
     }
 }

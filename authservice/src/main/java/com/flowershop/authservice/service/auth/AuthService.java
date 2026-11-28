@@ -1,14 +1,14 @@
-package com.flowershop.authservice.service;
+package com.flowershop.authservice.service.auth;
 
-import com.flowershop.authservice.dto.AuthResponse;
-import com.flowershop.authservice.dto.GoogleLoginOrRegisterDTO;
-import com.flowershop.authservice.dto.RegisterRequest;
-import com.flowershop.authservice.entity.constrains.ApiErrorMessage;
-import com.flowershop.authservice.dto.LoginRequest;
-import com.flowershop.authservice.dto.LoginResponseDto;
+import com.flowershop.authservice.dto.auth.AuthResponse;
+import com.flowershop.authservice.dto.auth.GoogleLoginOrRegisterDTO;
+import com.flowershop.authservice.dto.auth.RegisterRequest;
+import com.flowershop.authservice.exceptions.constrains.ApiErrorMessage;
+import com.flowershop.authservice.dto.auth.LoginRequest;
+import com.flowershop.authservice.dto.auth.LoginResponseDto;
 import com.flowershop.authservice.entity.User;
-import com.flowershop.authservice.entity.emums.AuthProvider;
-import com.flowershop.authservice.entity.emums.Role;
+import com.flowershop.authservice.entity.AuthProvider;
+import com.flowershop.authservice.entity.Role;
 import com.flowershop.authservice.exceptions.BadCredentialsException;
 import com.flowershop.authservice.exceptions.EmailAlreadyExistsException;
 import com.flowershop.authservice.exceptions.InvalidGoogleTokenException;
@@ -18,14 +18,17 @@ import com.flowershop.authservice.utils.JwtUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class AuthService {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -35,25 +38,25 @@ public class UserService {
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException(
-                    String.format("Email '%s' is already registered",
-                            request.getEmail()));
+                String.format("Email '%s' is already registered",
+                    request.getEmail()));
         }
 
         User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .authProvider(AuthProvider.LOCAL)
-                .role(Role.ROLE_USER)
-                .isMarketingAllowed(request.getIsMarketingAllow())
-                .build();
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .authProvider(AuthProvider.LOCAL)
+            .role(Role.ROLE_USER)
+            .isMarketingAllowed(request.getIsMarketingAllow())
+            .build();
         userRepository.save(user);
         return new AuthResponse(jwtUtils.generateToken(user.getEmail(), user.getRole().name()));
     }
 
     public LoginResponseDto login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new NotFoundException(
-                        ApiErrorMessage.USER_NOT_FOUND_BY_EMAIL.getMessage(request.getEmail())));
+            .orElseThrow(() -> new NotFoundException(
+                ApiErrorMessage.USER_NOT_FOUND_BY_EMAIL.getMessage(request.getEmail())));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException(ApiErrorMessage.INVALID_PASSWORD.getMessage(request.getEmail()));
         }
@@ -73,15 +76,20 @@ public class UserService {
         if (user.isPresent()) {
             return new AuthResponse(jwtUtils.generateToken(user.get().getEmail(), user.get().getRole().name()));
         }
+        String fullName = Stream.of(request.firstName(), request.lastName())
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(name -> !name.isEmpty())
+            .collect(Collectors.joining(" "));
+
         User newUser = User.builder()
-                .firstname(request.firstName())
-                .lastname(request.lastName())
-                .email(request.email())
-                .providerId(request.providerId())
-                .authProvider(AuthProvider.GOOGLE)
-                .role(Role.ROLE_USER)
-                .isMarketingAllowed(true)
-                .build();
+            .fullName(fullName)
+            .email(request.email())
+            .providerId(request.providerId())
+            .authProvider(AuthProvider.GOOGLE)
+            .role(Role.ROLE_USER)
+            .isMarketingAllowed(true)
+            .build();
         userRepository.save(newUser);
         return new AuthResponse(jwtUtils.generateToken(newUser.getEmail(), newUser.getRole().name()));
     }

@@ -1,4 +1,4 @@
-package com.flowershop.authservice.service;
+package com.flowershop.authservice.service.auth;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.flowershop.authservice.dto.GoogleLoginOrRegisterDTO;
+import com.flowershop.authservice.dto.auth.GoogleLoginOrRegisterDTO;
 import com.flowershop.authservice.exceptions.InvalidGoogleTokenException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;

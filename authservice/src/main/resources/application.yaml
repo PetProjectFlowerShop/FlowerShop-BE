@@ -1,9 +1,8 @@
 spring:
-#  profiles:
-#    active: local
 
   application:
     name: authservice
+
 
   datasource:
     url: ${POSTGRES_URL}

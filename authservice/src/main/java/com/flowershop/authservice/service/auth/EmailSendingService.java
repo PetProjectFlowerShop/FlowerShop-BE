@@ -1,4 +1,4 @@
-package com.flowershop.authservice.service;
+package com.flowershop.authservice.service.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

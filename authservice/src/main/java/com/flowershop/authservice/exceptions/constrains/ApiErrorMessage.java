@@ -1,4 +1,4 @@
-package com.flowershop.authservice.entity.constrains;
+package com.flowershop.authservice.exceptions.constrains;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

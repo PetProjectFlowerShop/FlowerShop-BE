@@ -1,6 +1,6 @@
-package com.flowershop.authservice.service;
+package com.flowershop.authservice.service.auth;
 
-import com.flowershop.authservice.dto.PasswordResetDto;
+import com.flowershop.authservice.dto.auth.PasswordResetDto;
 import com.flowershop.authservice.entity.User;
 import com.flowershop.authservice.exceptions.EmailNotRegisteredException;
 import com.flowershop.authservice.exceptions.TokenNoValidException;
@@ -30,8 +30,6 @@ public class PasswordRecoveryService {
     private String passwordRecoveryHost;
     @Value("${app.password.recovery.path}")
     private String passwordRecoveryPath;
-
-
 
     public void requestPasswordRecovery(String email){
         if(!userRepository.existsByEmail(email)){

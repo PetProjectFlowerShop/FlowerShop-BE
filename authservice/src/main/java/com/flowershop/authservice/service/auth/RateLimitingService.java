@@ -1,4 +1,4 @@
-package com.flowershop.authservice.service;
+package com.flowershop.authservice.service.auth;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
